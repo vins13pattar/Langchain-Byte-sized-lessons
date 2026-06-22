@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 468" font-family="-apple-system,Segoe UI,sans-serif">
+<defs><marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+<path d="M0,0 L8,3 L0,6 Z" fill="#94a3b8"/></marker></defs>
+<rect width="736" height="468" fill="#ffffff"/>
+<text x="368.0" y="40" text-anchor="middle" font-size="22" font-weight="800" fill="#0F172A">Custom Middleware</text>
+<rect x="238" y="86" width="260" height="58" rx="12" fill="#F5F3FF" stroke="#6D28D9" stroke-width="2"/><text x="368.0" y="120.0" text-anchor="middle" font-size="15" font-weight="700" fill="#6D28D9">AgentMiddleware (or decorators)</text>
+<rect x="40" y="204" width="200" height="58" rx="12" fill="#EFF6FF" stroke="#1D4ED8" stroke-width="2"/><text x="140.0" y="238.0" text-anchor="middle" font-size="15" font-weight="700" fill="#1D4ED8">before_model</text>
+<line x1="368" y1="144" x2="140.0" y2="204" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="268" y="204" width="200" height="58" rx="12" fill="#EFF6FF" stroke="#1D4ED8" stroke-width="2"/><text x="368.0" y="238.0" text-anchor="middle" font-size="15" font-weight="700" fill="#1D4ED8">after_model</text>
+<line x1="368" y1="144" x2="368.0" y2="204" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="496" y="204" width="200" height="58" rx="12" fill="#F0F9FF" stroke="#0369A1" stroke-width="2"/><text x="596.0" y="238.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0369A1">wrap_model_call</text>
+<line x1="368" y1="144" x2="596.0" y2="204" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="40" y="296" width="200" height="58" rx="12" fill="#F0FDF4" stroke="#15803D" stroke-width="2"/><text x="140.0" y="330.0" text-anchor="middle" font-size="15" font-weight="700" fill="#15803D">wrap_tool_call</text>
+<line x1="368" y1="144" x2="140.0" y2="296" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="268" y="296" width="200" height="58" rx="12" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/><text x="368.0" y="330.0" text-anchor="middle" font-size="15" font-weight="700" fill="#C2410C">dynamic_prompt</text>
+<line x1="368" y1="144" x2="368.0" y2="296" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="496" y="296" width="200" height="58" rx="12" fill="#F8FAFC" stroke="#334155" stroke-width="2"/><text x="596.0" y="330.0" text-anchor="middle" font-size="15" font-weight="700" fill="#334155">state_schema (AgentState)</text>
+<line x1="368" y1="144" x2="596.0" y2="296" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arr)"/>
+<text x="368.0" y="448" text-anchor="middle" font-size="12.5" fill="#64748B">Decorator for one hook; class for multiple hooks + config + async.</text>
+</svg>

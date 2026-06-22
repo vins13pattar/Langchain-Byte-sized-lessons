@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 30: Testing Agents — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F0F4F8;--surface:#FFF;--sidebar-bg:#0F172A;--sidebar-w:272px;--accent:#006DDD;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--green:#16A34A;--orange:#EA580C;--purple:#7C3AED;--smith:#10B981}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:#D1FAE5;color:#065F46;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#D1FAE5,#A7F3D0);border:1px solid #6EE7B7;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#064E3B;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#ECFDF5;border-left:4px solid var(--smith)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+.use-case{background:linear-gradient(135deg,#ECFDF5,#F0FDF4);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #6EE7B7}
+.use-case h4{color:#065F46;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+.tier-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}
+.tier-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px}
+.tier-card h4{font-size:13px;font-weight:700;margin-bottom:6px}
+.tier-card .speed{font-size:11px;font-weight:600;margin-bottom:8px}
+.tier-card p{font-size:12px;color:#64748B;margin:0}
+.speed.fast{color:#16A34A}
+.speed.medium{color:#D97706}
+.speed.slow{color:#DC2626}
+@media(max-width:700px){.tier-grid{grid-template-columns:1fr}}
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn.next{justify-content:flex-end;text-align:right}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="sidebar-brand">🦜 LangChain Course</div><div class="sidebar-title">Byte-Sized Lessons</div></div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="30-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 30 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link active"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 8 · Module 30 · Build &amp; Ship</div>
+  <h1>Testing Agents — Unit, Integration &amp; Eval-Based Tests</h1>
+  <div class="mod-meta">
+    <span>⏱ ~20 min</span><span>💻 Runnable code</span><span>🧪 Testing</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll learn:</strong> The three-tier testing pyramid for agents — unit tests with mocked LLMs (fast, free), integration tests with real LLMs (slower, catches real failures), and eval-based tests with LangSmith (catches quality regressions). How to write each and when to use them.</p>
+  </div>
+
+  <div class="callout analogy">
+    <div class="callout-icon">🏗️</div>
+    <div class="callout-content">
+      <strong>Analogy: building inspection tiers</strong>
+      <p>You don't hire a building inspector to check every nail — you use different checks at different stages. Framing inspection (fast, cheap) catches big structural problems early. Mechanical/electrical inspection (slower, needs an expert) catches system integration issues. Final occupancy inspection (rare, thorough) certifies the whole thing works. Agent testing is the same: mock tests catch logic errors, integration tests catch model+tool wiring, evals catch quality drift.</p>
+    </div>
+  </div>
+
+  <div class="tier-grid">
+    <div class="tier-card">
+      <h4>🔬 Unit Tests</h4>
+      <div class="speed fast">⚡ ~milliseconds</div>
+      <p>Mock the LLM. Test tool logic, middleware, routing, state transitions. Zero API calls, zero cost. Runs in CI on every commit.</p>
+    </div>
+    <div class="tier-card">
+      <h4>🔗 Integration Tests</h4>
+      <div class="speed medium">⏱ ~5–30 seconds</div>
+      <p>Real LLM, real tools. Test the agent end-to-end on a fixed input. Catches prompt breakage. Run on PR merges or nightly.</p>
+    </div>
+    <div class="tier-card">
+      <h4>📊 Eval Tests</h4>
+      <div class="speed slow">🐢 ~minutes</div>
+      <p>Run agent against a dataset of 50+ examples. Score with LLM-as-judge. Catches quality regressions. Run before major releases.</p>
+    </div>
+  </div>
+
+  <h2>Unit Tests — Mocking the LLM</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">tests/test_tools.py</span></div>
+    <pre><code class="language-python">import pytest
+from unittest.mock import MagicMock, patch
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+
+# 1. Test tool logic directly — no LLM involved
+from my_agent.tools import search_database
+
+def test_search_database_found():
+    result = search_database("product_id: 12345")
+    assert "price" in result
+    assert "availability" in result
+
+def test_search_database_empty_query():
+    with pytest.raises(ValueError, match="Query cannot be empty"):
+        search_database("")
+
+# 2. Test the agent with a fake LLM response
+from langchain_core.language_models.fake import FakeListChatModel
+from my_agent.agent import create_support_agent
+
+def test_agent_calls_correct_tool():
+    """Check the agent routes 'find order' to the order_lookup tool."""
+
+    # FakeListChatModel returns pre-scripted responses in order
+    fake_responses = [
+        AIMessage(
+            content="",
+            tool_calls=[{
+                "name": "order_lookup",
+                "args": {"order_id": "ORD-123"},
+                "id": "call_abc",
+                "type": "tool_call"
+            }]
+        ),
+        AIMessage(content="Your order ORD-123 is shipped!")
+    ]
+
+    fake_llm = FakeListChatModel(responses=fake_responses)
+    agent = create_support_agent(model=fake_llm)
+
+    result = agent.invoke({"messages": [HumanMessage("Where is order ORD-123?")]})
+
+    messages = result["messages"]
+    # Check a tool call happened
+    tool_calls = [m for m in messages if hasattr(m, "tool_calls") and m.tool_calls]
+    assert len(tool_calls) == 1
+    assert tool_calls[0].tool_calls[0]["name"] == "order_lookup"
+
+# 3. Test middleware logic
+from my_agent.middleware import RateLimitMiddleware
+
+@pytest.mark.asyncio
+async def test_rate_limit_blocks_after_threshold():
+    middleware = RateLimitMiddleware(max_calls_per_minute=3)
+    user_id = "user_123"
+
+    # First 3 calls should pass
+    for _ in range(3):
+        assert await middleware.check_rate_limit(user_id) == True
+
+    # 4th call should be blocked
+    assert await middleware.check_rate_limit(user_id) == False</code></pre>
+  </div>
+
+  <h2>Integration Tests — Real LLM, Fixed Inputs</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">tests/test_integration.py</span></div>
+    <pre><code class="language-python">import pytest
+import os
+
+# Skip if no API key (don't fail CI when key not set)
+pytestmark = pytest.mark.skipif(
+    not os.getenv("ANTHROPIC_API_KEY"),
+    reason="Integration tests require ANTHROPIC_API_KEY"
+)
+
+from my_agent.agent import create_support_agent
+
+@pytest.fixture(scope="module")
+def agent():
+    """One agent instance per test module — cheaper than per-test."""
+    return create_support_agent()
+
+def test_greeting_response(agent):
+    """Agent responds sensibly to a greeting."""
+    result = agent.invoke({"messages": [("user", "Hello!")]})
+    response = result["messages"][-1].content.lower()
+    assert any(w in response for w in ["hello", "hi", "help", "assist"])
+
+def test_order_lookup_uses_tool(agent):
+    """Agent calls order_lookup tool when asked about an order."""
+    result = agent.invoke({"messages": [("user", "Check order ORD-999")]})
+    messages = result["messages"]
+    # At least one ToolMessage should be present
+    tool_messages = [m for m in messages if isinstance(m, ToolMessage)]
+    assert len(tool_messages) >= 1
+
+def test_agent_respects_guardrail(agent):
+    """Agent declines off-topic requests."""
+    result = agent.invoke({"messages": [("user", "Write me a poem about cats")]})
+    response = result["messages"][-1].content.lower()
+    assert any(w in response for w in ["support", "assist", "focus", "help with"])
+
+@pytest.mark.asyncio
+async def test_streaming_returns_tokens(agent):
+    """Streaming mode actually yields partial chunks."""
+    chunks = []
+    async for event in agent.astream_events(
+        {"messages": [("user", "What's your return policy?")]},
+        version="v2"
+    ):
+        if event["event"] == "on_chat_model_stream":
+            chunks.append(event["data"]["chunk"].content)
+
+    # Should have multiple chunks, not just one big response
+    assert len(chunks) > 3</code></pre>
+  </div>
+
+  <h2>Eval-Based Tests — Quality Regression Prevention</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">tests/test_evals.py</span></div>
+    <pre><code class="language-python">"""
+Eval tests — run with: pytest tests/test_evals.py -m eval
+These are slow and require both ANTHROPIC_API_KEY and LANGCHAIN_API_KEY.
+Run in CI nightly or before releases, not on every commit.
+"""
+import pytest
+from langsmith import evaluate, Client
+from langsmith.evaluation import LangChainStringEvaluator
+from langchain_openai import ChatOpenAI
+from my_agent.agent import create_support_agent
+
+pytestmark = [
+    pytest.mark.eval,
+    pytest.mark.skipif(
+        not os.getenv("LANGCHAIN_API_KEY"),
+        reason="Evals require LANGCHAIN_API_KEY"
+    )
+]
+
+QUALITY_THRESHOLD = 0.80  # Fail if average correctness drops below 80%
+
+def test_support_agent_quality():
+    agent = create_support_agent()
+
+    def run_agent(inputs: dict) -> dict:
+        result = agent.invoke({"messages": [("user", inputs["question"])]})
+        return {"answer": result["messages"][-1].content}
+
+    correctness = LangChainStringEvaluator(
+        "labeled_criteria",
+        config={"criteria": "correctness", "llm": ChatOpenAI(model="gpt-4o")}
+    )
+
+    results = evaluate(
+        run_agent,
+        data="support-agent-golden-set",
+        evaluators=[correctness],
+        experiment_prefix="pytest-eval",
+        max_concurrency=4,
+    )
+
+    df = results.to_pandas()
+    avg_score = df["correctness"].mean()
+
+    print(f"\nEval results: avg correctness = {avg_score:.2f}")
+    assert avg_score >= QUALITY_THRESHOLD, (
+        f"Agent quality dropped below threshold! "
+        f"Got {avg_score:.2f}, expected >= {QUALITY_THRESHOLD}"
+    )</code></pre>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: non-determinism makes assertions brittle</strong>
+      <p>LLMs are probabilistic — the same prompt won't always produce the exact same output. Don't assert <code class="inline">assert response == "exact string"</code>. Instead: check for key words, check tool call names (deterministic), check response length range, or use LLM-as-judge for quality. Also: integration tests can be flaky on model outages. Use <code class="inline">pytest-retry</code> for resilience and separate "fast" from "slow" tests using markers.</p>
+    </div>
+  </div>
+
+  <div class="use-case">
+    <h4>🛡️ Preventing Prompt Injection in CI</h4>
+    <p>A security-conscious team adds a unit test that checks their <code>InputGuardrailMiddleware</code> blocks known injection patterns: <code>"ignore previous instructions"</code>, <code>"system:"</code>, and <code>"jailbreak"</code>. This runs in 20ms on every commit, with zero API calls. A separate nightly eval test measures whether the guardrails cause excessive false positives on legitimate customer messages. The unit tests catch code changes; the evals catch prompt drift. Together they provide defense-in-depth without slowing down the development cycle.</p>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>Key Takeaways</strong>
+      <p>Test agents at three tiers: unit (mocked LLM, fast, every commit), integration (real LLM, fixed inputs, on merge), eval (dataset + scoring, before releases). Use <code class="inline">FakeListChatModel</code> for deterministic unit tests. Mark integration and eval tests with <code class="inline">pytest.mark.skipif</code> to not block CI when keys are absent. Never assert exact LLM output strings — check structure, key words, or tool call names. Use LLM-as-judge (via LangSmith) for quality scoring, not hand-written string checks.</p>
+    </div>
+  </div>
+
+  <div class="mod-nav">
+    <a href="29-langsmith-studio.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 29: LangSmith Studio</strong></div>
+    </a>
+    <a href="31-agent-chat-ui.html" class="nav-btn next">
+      <div><small>Next up</small><strong>Module 31: Agent Chat UI →</strong></div>
+      <span style="font-size:20px">➡</span>
+    </a>
+  </div>
+
+</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

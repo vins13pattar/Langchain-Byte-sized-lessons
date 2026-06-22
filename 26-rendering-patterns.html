@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 26: Rendering Patterns — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F0F4F8;--surface:#FFF;--sidebar-bg:#0F172A;--sidebar-w:272px;--accent:#006DDD;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--green:#16A34A;--orange:#EA580C;--purple:#7C3AED;--indigo:#4F46E5}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:#E0E7FF;color:#3730A3;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#E0E7FF,#C7D2FE);border:1px solid #A5B4FC;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#3730A3;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#EFF6FF;border-left:4px solid var(--accent)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+
+/* live demo */
+.demo-chat{background:#0F172A;border-radius:12px;padding:20px;margin:20px 0;min-height:200px;max-height:300px;overflow-y:auto}
+.demo-msg{margin-bottom:14px}
+.demo-msg.user{text-align:right}
+.demo-msg .bubble{display:inline-block;padding:8px 14px;border-radius:12px;font-size:13px;max-width:80%;text-align:left}
+.demo-msg.user .bubble{background:#006DDD;color:#fff}
+.demo-msg.agent .bubble{background:#1E293B;color:#E2E8F0}
+.demo-msg.agent.thinking .bubble{color:#64748B;font-style:italic}
+.tool-call-card{background:#1E293B;border:1px solid #334155;border-radius:8px;padding:10px 14px;font-size:12px;font-family:monospace;margin-bottom:8px}
+.tool-call-card .tc-name{color:#7FC8FF;font-weight:700;margin-bottom:4px}
+.tool-call-card .tc-status{color:#64748B}
+.tool-call-card.done .tc-status{color:#4ADE80}
+.cursor{display:inline-block;width:2px;height:14px;background:#E2E8F0;animation:blink 1s infinite;vertical-align:middle;margin-left:1px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.demo-controls{display:flex;gap:8px;margin-top:10px}
+.demo-btn{padding:6px 14px;background:#006DDD;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600}
+.demo-btn:hover{background:#0054AA}
+
+.use-case{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #BAE6FD}
+.use-case h4{color:#1E40AF;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn.next{justify-content:flex-end;text-align:right}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="sidebar-brand">🦜 LangChain Course</div><div class="sidebar-title">Byte-Sized Lessons</div></div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="26-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 26 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link active"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 7 · Module 26 · Frontend</div>
+  <h1>Rendering Patterns — Streaming, Markdown &amp; Tool Call UI</h1>
+  <div class="mod-meta">
+    <span>⏱ ~20 min</span><span>💻 Runnable code</span><span>🎨 UI components</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll learn:</strong> How to consume SSE in React and build smooth token-by-token streaming, render markdown safely, and show tool calls as they happen — the three UI challenges specific to agent applications.</p>
+  </div>
+
+  <div class="callout analogy">
+    <div class="callout-icon">📺</div>
+    <div class="callout-content">
+      <strong>Analogy: live TV vs. recorded shows</strong>
+      <p>A recorded show loads fully before you see anything — that's a non-streaming response. Live TV shows frames as they're broadcast — that's token streaming. Live TV is more engaging even though the content is the same. For AI agents, showing text as it's generated cuts perceived latency by 10x and makes the product feel alive. The rendering challenge is making incomplete text look good at every frame.</p>
+    </div>
+  </div>
+
+  <h2>Live Demo — What You're Building</h2>
+
+  <div class="demo-chat" id="demo-chat">
+    <div class="demo-msg user"><div class="bubble">What's the capital of France and its population?</div></div>
+    <div class="demo-msg agent thinking" id="demo-status"><div class="bubble">Agent is thinking...</div></div>
+  </div>
+  <div class="demo-controls">
+    <button class="demo-btn" onclick="runDemo()">▶ Simulate Streaming Response</button>
+    <button class="demo-btn" onclick="resetDemo()" style="background:#475569">↺ Reset</button>
+  </div>
+
+  <h2>Consuming SSE in React</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">typescript</span><span class="code-filename">hooks/useAgentStream.ts</span></div>
+    <pre><code class="language-typescript">import { useState, useCallback, useRef } from 'react'
+
+interface Message {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  toolCalls?: ToolCall[]
+  isStreaming?: boolean
+}
+
+interface ToolCall {
+  name: string
+  status: 'running' | 'done'
+  input?: Record<string, unknown>
+}
+
+export function useAgentStream(threadId: string) {
+  const [messages, setMessages] = useState<Message[]>([])
+  const [isStreaming, setIsStreaming] = useState(false)
+  const abortRef = useRef<AbortController | null>(null)
+
+  const sendMessage = useCallback(async (userMessage: string) => {
+    if (isStreaming) return
+
+    // Add user message immediately (optimistic)
+    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: userMessage }
+    const assistantId = (Date.now() + 1).toString()
+    const assistantMsg: Message = { id: assistantId, role: 'assistant', content: '', isStreaming: true, toolCalls: [] }
+
+    setMessages(prev => [...prev, userMsg, assistantMsg])
+    setIsStreaming(true)
+
+    abortRef.current = new AbortController()
+
+    try {
+      const res = await fetch('/api/chat/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage, threadId }),
+        signal: abortRef.current.signal,
+      })
+
+      const reader = res.body!.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const data = JSON.parse(line.slice(6))
+
+          if (data.type === 'token') {
+            // Append token to assistant message
+            setMessages(prev => prev.map(m =>
+              m.id === assistantId ? { ...m, content: m.content + data.content } : m
+            ))
+          } else if (data.type === 'tool_start') {
+            setMessages(prev => prev.map(m =>
+              m.id === assistantId
+                ? { ...m, toolCalls: [...(m.toolCalls ?? []), { name: data.name, status: 'running', input: data.input }] }
+                : m
+            ))
+          } else if (data.type === 'tool_end') {
+            setMessages(prev => prev.map(m =>
+              m.id === assistantId
+                ? { ...m, toolCalls: (m.toolCalls ?? []).map(tc => tc.name === data.name ? { ...tc, status: 'done' } : tc) }
+                : m
+            ))
+          } else if (data.type === 'done') {
+            setMessages(prev => prev.map(m =>
+              m.id === assistantId ? { ...m, isStreaming: false } : m
+            ))
+          }
+        }
+      }
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') console.error(err)
+    } finally {
+      setIsStreaming(false)
+    }
+  }, [threadId, isStreaming])
+
+  const stopStreaming = useCallback(() => {
+    abortRef.current?.abort()
+    setIsStreaming(false)
+  }, [])
+
+  return { messages, isStreaming, sendMessage, stopStreaming }
+}</code></pre>
+  </div>
+
+  <h2>Markdown Rendering Component</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">typescript</span><span class="code-filename">components/MessageContent.tsx</span></div>
+    <pre><code class="language-typescript">// npm install react-markdown remark-gfm rehype-highlight
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeHighlight from 'rehype-highlight'
+import 'highlight.js/styles/atom-one-dark.css'
+
+interface Props {
+  content: string
+  isStreaming?: boolean
+}
+
+export function MessageContent({ content, isStreaming }: Props) {
+  return (
+    <div className="message-content">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}   // Tables, strikethrough, task lists
+        rehypePlugins={[rehypeHighlight]}  // Syntax highlighting
+        components={{
+          // Custom code blocks with copy button
+          code({ node, className, children, ...props }) {
+            const isBlock = /language-/.test(className || '')
+            if (!isBlock) {
+              return <code className="inline-code" {...props}>{children}</code>
+            }
+            return (
+              <div className="code-block">
+                <button
+                  className="copy-btn"
+                  onClick={() => navigator.clipboard.writeText(String(children))}
+                >
+                  Copy
+                </button>
+                <code className={className} {...props}>{children}</code>
+              </div>
+            )
+          },
+          // Open links in new tab
+          a({ href, children }) {
+            return <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
+          },
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+      {isStreaming && <span className="cursor" aria-hidden />}
+    </div>
+  )
+}
+
+// CSS:
+// .cursor { display: inline-block; width: 2px; height: 1em;
+//           background: currentColor; animation: blink 1s infinite; }
+// @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }</code></pre>
+  </div>
+
+  <h2>Tool Call Display Component</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">typescript</span><span class="code-filename">components/ToolCallDisplay.tsx</span></div>
+    <pre><code class="language-typescript">interface ToolCall {
+  name: string
+  status: 'running' | 'done'
+  input?: Record<string, unknown>
+}
+
+const TOOL_ICONS: Record<string, string> = {
+  web_search: '🔍',
+  run_sql: '🗄️',
+  send_email: '📧',
+  search_docs: '📚',
+  create_ticket: '🎫',
+}
+
+export function ToolCallDisplay({ toolCalls }: { toolCalls: ToolCall[] }) {
+  if (!toolCalls.length) return null
+
+  return (
+    <div className="tool-calls">
+      {toolCalls.map((tc, i) => (
+        <div key={i} className={`tool-call ${tc.status}`}>
+          <span className="tool-icon">{TOOL_ICONS[tc.name] ?? '🔧'}</span>
+          <div className="tool-info">
+            <span className="tool-name">{formatToolName(tc.name)}</span>
+            {tc.input && (
+              <span className="tool-args">
+                {Object.entries(tc.input).slice(0, 2).map(([k, v]) =>
+                  `${k}: ${JSON.stringify(v).slice(0, 40)}`
+                ).join(', ')}
+              </span>
+            )}
+          </div>
+          <span className="tool-status">
+            {tc.status === 'running'
+              ? <span className="spinner">⟳</span>
+              : '✓'}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function formatToolName(name: string): string {
+  return name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}</code></pre>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: never use dangerouslySetInnerHTML for markdown</strong>
+      <p>If you render agent-generated markdown as raw HTML, a malicious prompt injection could produce <code class="inline">&lt;script&gt;</code> tags that execute in your users' browsers — an XSS attack. Always use a sanitizing markdown renderer like <code class="inline">react-markdown</code> with <code class="inline">rehype-sanitize</code>, never raw <code class="inline">innerHTML</code> or <code class="inline">dangerouslySetInnerHTML</code>.</p>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>Key Takeaways</strong>
+      <p>Use the Fetch + ReadableStream API (not EventSource) for SSE — it supports POST and custom headers. Append tokens to the message content on each <code class="inline">data.type === 'token'</code> event. Show tool calls as they start (<code class="inline">tool_start</code>) and mark them done (<code class="inline">tool_end</code>) for transparent UX. Use <code class="inline">react-markdown</code> with <code class="inline">rehype-sanitize</code> for safe markdown rendering. Add a blinking cursor during streaming by appending a CSS-animated element when <code class="inline">isStreaming</code> is true.</p>
+    </div>
+  </div>
+
+  <div class="mod-nav">
+    <a href="25-frontend-architecture.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 25: Frontend Architecture</strong></div>
+    </a>
+    <a href="27-interaction-patterns.html" class="nav-btn next">
+      <div><small>Next up</small><strong>Module 27: Interaction Patterns →</strong></div>
+      <span style="font-size:20px">➡</span>
+    </a>
+  </div>
+
+</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+<script>
+// Live demo simulation
+const DEMO_SEQUENCE = [
+  { type: 'tool_start', name: 'web_search', input: { query: 'capital of France population 2024' } },
+  { type: 'tool_end', name: 'web_search' },
+  { type: 'tokens', content: 'The capital of France is **Paris**.\n\nAs of 2024, the population of Paris is approximately **2.1 million** people in the city proper, and around **12 million** in the greater Paris metropolitan area (Île-de-France region), making it the most populous city in the European Union.' },
+  { type: 'done' },
+];
+
+function resetDemo() {
+  const chat = document.getElementById('demo-chat');
+  chat.innerHTML = `
+    <div class="demo-msg user"><div class="bubble">What's the capital of France and its population?</div></div>
+    <div class="demo-msg agent thinking" id="demo-status"><div class="bubble">Agent is thinking...</div></div>
+  `;
+}
+
+async function runDemo() {
+  resetDemo();
+  await new Promise(r => setTimeout(r, 600));
+
+  const chat = document.getElementById('demo-chat');
+  const statusEl = document.getElementById('demo-status');
+
+  // Show tool call
+  statusEl.className = 'demo-msg agent';
+  const toolCard = document.createElement('div');
+  toolCard.className = 'tool-call-card';
+  toolCard.innerHTML = '<div class="tc-name">🔍 web_search</div><div class="tc-status">⟳ Running: "capital of France population 2024"</div>';
+  chat.appendChild(toolCard);
+  chat.scrollTop = chat.scrollHeight;
+
+  await new Promise(r => setTimeout(r, 1200));
+
+  // Mark tool done
+  toolCard.querySelector('.tc-status').textContent = '✓ Done';
+  toolCard.querySelector('.tc-status').style.color = '#4ADE80';
+  toolCard.classList.add('done');
+
+  await new Promise(r => setTimeout(r, 300));
+
+  // Start streaming response
+  const msgEl = document.createElement('div');
+  msgEl.className = 'demo-msg agent';
+  msgEl.innerHTML = '<div class="bubble" id="streaming-bubble"></div>';
+  chat.appendChild(msgEl);
+  chat.scrollTop = chat.scrollHeight;
+
+  const bubble = document.getElementById('streaming-bubble');
+  const fullText = 'The capital of France is **Paris**.\n\nAs of 2024, the population of Paris is approximately **2.1 million** people in the city proper, and around **12 million** in the greater Paris metropolitan area (Île-de-France region), making it the most populous city in the European Union.';
+
+  let displayed = '';
+  for (const char of fullText) {
+    displayed += char;
+    bubble.innerHTML = displayed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>') + '<span class="cursor"></span>';
+    chat.scrollTop = chat.scrollHeight;
+    await new Promise(r => setTimeout(r, 18));
+  }
+
+  // Remove cursor
+  bubble.innerHTML = displayed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+}
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

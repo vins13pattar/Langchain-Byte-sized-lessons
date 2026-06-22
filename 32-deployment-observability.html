@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 32: Deploy &amp; Observe — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F0F4F8;--surface:#FFF;--sidebar-bg:#0F172A;--sidebar-w:272px;--accent:#006DDD;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--green:#16A34A;--orange:#EA580C;--purple:#7C3AED;--smith:#10B981}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:#D1FAE5;color:#065F46;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#D1FAE5,#A7F3D0);border:1px solid #6EE7B7;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#064E3B;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#ECFDF5;border-left:4px solid var(--smith)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+.use-case{background:linear-gradient(135deg,#ECFDF5,#F0FDF4);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #6EE7B7}
+.use-case h4{color:#065F46;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+.complete-banner{background:linear-gradient(135deg,#0F172A,#1E3A5F);border-radius:16px;padding:36px;margin:48px 0;text-align:center}
+.complete-banner h2{color:#fff;font-size:1.8rem;border:none;margin:0 0 12px;padding:0}
+.complete-banner p{color:#94A3B8;margin:0 0 24px;font-size:15px}
+.complete-banner .stats{display:flex;justify-content:center;gap:32px;flex-wrap:wrap}
+.complete-banner .stat{text-align:center}
+.complete-banner .stat-num{font-size:2rem;font-weight:900;color:#7FC8FF;display:block}
+.complete-banner .stat-label{font-size:12px;color:#64748B;text-transform:uppercase;letter-spacing:1px}
+.home-btn{display:inline-flex;align-items:center;gap:8px;background:#006DDD;color:#fff;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;margin-top:28px}
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="sidebar-brand">🦜 LangChain Course</div><div class="sidebar-title">Byte-Sized Lessons</div></div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="32-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 32 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link active"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 8 · Module 32 · Build &amp; Ship</div>
+  <h1>Deploy &amp; Observe — Containerization, Scaling &amp; Monitoring</h1>
+  <div class="mod-meta">
+    <span>⏱ ~20 min</span><span>💻 Runnable code</span><span>🚀 Production</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll learn:</strong> How to containerize your agent backend with Docker, configure it for production (no function timeout, proper concurrency), add structured logging + metrics that work with LangSmith, and handle the operational concerns unique to agent workloads: unpredictable latency, cost spikes, and cascading LLM failures.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px 22px;margin:28px 0">
+    <div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">📐 Structural overview — Deployment & observability</div>
+    <img src="diagrams/32-deployment.svg" alt="Deployment & observability diagram" loading="lazy" style="width:100%;height:auto;display:block;border:1px solid #F1F5F9;border-radius:8px;background:#fff">
+    <p style="font-size:12.5px;color:#64748B;margin:12px 0 0">
+      <a href="diagrams/32-deployment.svg" target="_blank" style="color:#006DDD;font-weight:600;text-decoration:none">↗ Open full size</a>
+      &nbsp;&middot;&nbsp;
+      <a href="diagrams/32-deployment.excalidraw" download style="color:#006DDD;font-weight:600;text-decoration:none">⬇ Edit in Excalidraw</a>
+      &nbsp;— labels use real LangChain classes.
+    </p>
+  </div>
+
+
+  <div class="callout analogy">
+    <div class="callout-icon">🌡️</div>
+    <div class="callout-content">
+      <strong>Analogy: ICU vs. general ward</strong>
+      <p>A patient in a general ward gets vital signs checked every few hours. An ICU patient has continuous monitoring — heart rate, oxygen, blood pressure — with alarms that fire immediately. Production agents need ICU-level monitoring: continuous visibility into latency, token cost, tool failure rates, and guardrail triggers. An alert that fires at 3am beats discovering a $2,000 LLM bill on Friday morning.</p>
+    </div>
+  </div>
+
+  <h2>Production Dockerfile</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">dockerfile</span><span class="code-filename">Dockerfile</span></div>
+    <pre><code class="language-dockerfile">FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install dependencies first (layer caching — don't reinstall unless deps change)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy app code
+COPY . .
+
+# Run as non-root user for security
+RUN adduser --disabled-password --gecos "" appuser
+USER appuser
+
+# Expose port
+EXPOSE 8000
+
+# Production server: uvicorn with multiple workers
+# --workers 4: handle concurrent requests (agents are async/IO-bound)
+# --timeout-keep-alive 120: keep SSE connections alive for 2 minutes
+CMD ["uvicorn", "main:app",
+     "--host", "0.0.0.0",
+     "--port", "8000",
+     "--workers", "4",
+     "--timeout-keep-alive", "120",
+     "--log-level", "info"]</code></pre>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">yaml</span><span class="code-filename">docker-compose.yml (for local dev)</span></div>
+    <pre><code class="language-yaml">version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      - LANGCHAIN_TRACING_V2=true
+      - LANGCHAIN_PROJECT=my-agent-prod
+    volumes:
+      - ./backend:/app   # hot reload in dev (remove in prod)
+    depends_on:
+      - redis
+      - postgres
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"  # used by rate limiting middleware
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: agent_checkpoints
+      POSTGRES_USER: agent
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:</code></pre>
+  </div>
+
+  <h2>Structured Logging for Agents</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">logging_config.py</span></div>
+    <pre><code class="language-python">import structlog
+import logging
+from contextvars import ContextVar
+
+# Context variable: attach thread_id and user_id to every log line
+_request_context: ContextVar[dict] = ContextVar("request_context", default={})
+
+# Configure structured JSON logging
+structlog.configure(
+    processors=[
+        structlog.contextvars.merge_contextvars,
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.JSONRenderer(),
+    ]
+)
+
+logger = structlog.get_logger()
+
+# In your FastAPI middleware:
+async def log_context_middleware(request: Request, call_next):
+    thread_id = request.headers.get("x-thread-id", "unknown")
+    user_id = getattr(request.state, "user_id", "anonymous")
+
+    # Bind context for this request — shows up in every log line
+    structlog.contextvars.bind_contextvars(
+        thread_id=thread_id,
+        user_id=user_id,
+        path=request.url.path,
+    )
+
+    try:
+        response = await call_next(request)
+        logger.info("request_completed", status=response.status_code)
+        return response
+    except Exception as e:
+        logger.error("request_failed", error=str(e))
+        raise
+    finally:
+        structlog.contextvars.clear_contextvars()
+
+# In your agent / tools:
+# logger.info("tool_called", tool="order_lookup", order_id=order_id)
+# logger.warning("guardrail_triggered", reason="injection_detected")
+# logger.error("llm_timeout", model="claude-opus-4-5", latency_ms=30000)</code></pre>
+  </div>
+
+  <h2>Key Metrics to Monitor</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">metrics.py — Prometheus counters</span></div>
+    <pre><code class="language-python">from prometheus_client import Counter, Histogram, Gauge
+
+# Expose these at GET /metrics — Prometheus scrapes every 15s
+# Grafana dashboards visualize them
+
+agent_requests_total = Counter(
+    "agent_requests_total",
+    "Total agent invocations",
+    ["status"]  # "success" | "error" | "timeout"
+)
+
+agent_latency_seconds = Histogram(
+    "agent_latency_seconds",
+    "Agent end-to-end response latency",
+    buckets=[1, 3, 5, 10, 20, 30, 60, 120]  # agents can be slow!
+)
+
+llm_tokens_total = Counter(
+    "llm_tokens_total",
+    "LLM tokens consumed",
+    ["model", "direction"]  # direction: "input" | "output"
+)
+
+tool_calls_total = Counter(
+    "tool_calls_total",
+    "Tool invocations",
+    ["tool_name", "status"]  # "success" | "error"
+)
+
+guardrail_triggers_total = Counter(
+    "guardrail_triggers_total",
+    "Guardrail interventions",
+    ["guardrail_type"]  # "input" | "output" | "rate_limit"
+)
+
+active_streaming_connections = Gauge(
+    "active_streaming_connections",
+    "Currently open SSE connections"
+)
+
+# Alert rules (set in Prometheus / Grafana):
+# - agent_latency_seconds p95 > 30s → page oncall
+# - tool_calls_total{status="error"} rate > 10/min → page oncall
+# - llm_tokens_total rate sudden 10x spike → billing alert</code></pre>
+  </div>
+
+  <h2>Platform Comparison</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">text</span><span class="code-filename">deployment platform decision guide</span></div>
+    <pre><code class="language-text">PLATFORM          SSE SUPPORT    TIMEOUT    FREE TIER    BEST FOR
+──────────────────────────────────────────────────────────────────
+Railway           ✅ Yes         No limit   $5/mo credit  General agents
+Render            ✅ Yes         No limit   750h/mo free  General agents
+Fly.io            ✅ Yes         No limit   $5/mo credit  Low-latency, global
+Google Cloud Run  ✅ Yes         60 min     Yes           Enterprise, GCP stack
+AWS ECS Fargate   ✅ Yes         No limit   No            Enterprise, AWS stack
+Vercel (Edge)     ✅ Yes         No limit   Yes           Next.js full-stack
+Vercel (Serverless)✅ Yes        30s*       Yes           ⚠️ Short agents only
+
+* Vercel serverless = 30s max. Fine for fast agents, breaks for document analysis.
+  Use Edge runtime (no timeout) or a separate long-running backend.
+
+RULE OF THUMB:
+- Prototype: Railway or Render (simplest setup, no timeout headaches)
+- Production startup: Fly.io (fast cold starts, regional deployments)
+- Enterprise: Cloud Run (pay per use, GCP integrations, VPC support)
+- Avoid: any serverless with 30s timeout for agents that use heavy tools</code></pre>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: cost explosions from runaway agents</strong>
+      <p>Agents with loops or tool retry bugs can burn through thousands of LLM tokens in minutes. Set hard limits in three places: (1) <code class="inline">recursion_limit</code> on the agent (max agent iterations), (2) a total token budget middleware that raises after N tokens, and (3) a billing alert in your LLM provider's dashboard. Catching runaway agents at the middleware layer is cheaper than discovering it via your credit card statement.</p>
+    </div>
+  </div>
+
+  <div class="use-case">
+    <h4>📊 Production Incident: "Why Is It Slow Today?"</h4>
+    <p>A team gets a Slack alert: agent p95 latency is 45s (normally 8s). They open Grafana: <code>tool_calls_total</code> rate on <code>web_search</code> is up 4x. They open LangSmith: traces show agents calling web_search 12+ times per query. Turns out, a prompt change yesterday made the agent much more aggressive about searching. The LangSmith trace shows the exact model output that triggered the extra searches. They revert the prompt, latency drops immediately. Without structured logging, metrics, and LangSmith traces, they'd be guessing for hours.</p>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>Key Takeaways</strong>
+      <p>Use Docker + uvicorn with multiple workers for the backend; set <code class="inline">timeout-keep-alive 120</code> to keep SSE connections alive. Use structlog for JSON-structured logs with bound context (thread_id, user_id) on every line. Track five key metrics: request count, latency histogram, token consumption, tool call success rate, guardrail triggers. Choose platforms without function timeouts (Railway, Render, Fly, Cloud Run). Set hard recursion and token budget limits to prevent runaway agent cost. LangSmith traces + structured logs + Prometheus metrics = full production observability.</p>
+    </div>
+  </div>
+
+  <div class="complete-banner">
+    <h2>🎉 Course Complete!</h2>
+    <p>You've covered the entire LangChain Python stack — from your first agent to production deployment with full observability.</p>
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-num">32</span>
+        <span class="stat-label">Modules</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">8</span>
+        <span class="stat-label">Parts</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">~10h</span>
+        <span class="stat-label">Content</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">150+</span>
+        <span class="stat-label">Code Examples</span>
+      </div>
+    </div>
+    <a href="index.html" class="home-btn">← Back to Course Home</a>
+  </div>
+
+  <div class="mod-nav">
+    <a href="31-agent-chat-ui.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 31: Agent Chat UI</strong></div>
+    </a>
+    <a href="index.html" class="nav-btn" style="justify-content:flex-end;text-align:right">
+      <div><small>Back to</small><strong>Course Home →</strong></div>
+      <span style="font-size:20px">🏠</span>
+    </a>
+  </div>
+
+</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

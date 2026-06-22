@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 24: Agentic RAG — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F0F4F8;--surface:#FFF;--sidebar-bg:#0F172A;--sidebar-w:272px;--accent:#006DDD;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--green:#16A34A;--orange:#EA580C;--purple:#7C3AED;--teal:#0D9488}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:#CCFBF1;color:#0F766E;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#CCFBF1,#A7F3D0);border:1px solid #6EE7B7;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#065F46;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#EFF6FF;border-left:4px solid var(--accent)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+
+/* progression diagram */
+.rag-progression{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:20px 0}
+.prog-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.prog-card h4{font-size:13px;font-weight:700;margin-bottom:6px}
+.prog-card.basic h4{color:#1E40AF}
+.prog-card.twostep h4{color:#059669}
+.prog-card.agentic h4{color:#7C3AED}
+.prog-card ul{padding-left:14px;margin:0}
+.prog-card li{font-size:12px;color:#475569;margin-bottom:3px}
+
+/* source selector interactive */
+.source-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}
+.source-card{background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:13px}
+.source-card strong{display:block;font-size:13px;font-weight:700;margin-bottom:4px}
+.source-card p{margin:0;font-size:12px;color:var(--muted)}
+
+.flow-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:13.5px}
+.flow-table th{text-align:left;padding:10px 14px;background:#F8FAFC;border-bottom:2px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted)}
+.flow-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top;font-size:13.5px}
+.flow-table tr:hover td{background:#F8FAFC}
+
+.use-case{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #BAE6FD}
+.use-case h4{color:#1E40AF;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn.next{justify-content:flex-end;text-align:right}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+
+.part-badge{display:inline-flex;align-items:center;gap:8px;background:#F0FDF4;border:1px solid #BBF7D0;color:#166534;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:600;margin:32px 0;width:100%}
+
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="sidebar-brand">🦜 LangChain Course</div><div class="sidebar-title">Byte-Sized Lessons</div></div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="24-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 24 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link active"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 6 · Module 24 · Retrieval &amp; RAG</div>
+  <h1>Agentic RAG — The Agent Decides When &amp; How to Retrieve</h1>
+  <div class="mod-meta">
+    <span>⏱ ~22 min</span><span>💻 Runnable code</span><span>🤖 Adaptive retrieval</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll learn:</strong> How agentic RAG differs from pipeline RAG, building agents that choose between multiple retrieval sources, implementing self-correction loops (retrieve → check relevance → re-retrieve if needed), and combining vector search with live web search.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px 22px;margin:28px 0">
+    <div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">📐 Structural overview — Agentic RAG</div>
+    <img src="diagrams/24-agentic-rag.svg" alt="Agentic RAG diagram" loading="lazy" style="width:100%;height:auto;display:block;border:1px solid #F1F5F9;border-radius:8px;background:#fff">
+    <p style="font-size:12.5px;color:#64748B;margin:12px 0 0">
+      <a href="diagrams/24-agentic-rag.svg" target="_blank" style="color:#006DDD;font-weight:600;text-decoration:none">↗ Open full size</a>
+      &nbsp;&middot;&nbsp;
+      <a href="diagrams/24-agentic-rag.excalidraw" download style="color:#006DDD;font-weight:600;text-decoration:none">⬇ Edit in Excalidraw</a>
+      &nbsp;— labels use real LangChain classes.
+    </p>
+  </div>
+
+
+  <div class="callout analogy">
+    <div class="callout-icon">🕵️</div>
+    <div class="callout-content">
+      <strong>Analogy: the detective vs. the archivist</strong>
+      <p>An archivist follows a fixed process: look in drawer A, then drawer B, then write the report. A detective adapts: checks the case file first, if that's insufficient interviews witnesses, if that doesn't work searches public records, and only writes the report when they have enough evidence. Agentic RAG is the detective — retrieval decisions are made dynamically based on what the agent found so far.</p>
+    </div>
+  </div>
+
+  <h2>Pipeline RAG vs. Agentic RAG</h2>
+
+  <div class="rag-progression">
+    <div class="prog-card basic">
+      <h4>📥 Basic RAG</h4>
+      <ul>
+        <li>Fixed pipeline: always retrieve then generate</li>
+        <li>Single retrieval step</li>
+        <li>One knowledge source</li>
+        <li>No self-correction</li>
+      </ul>
+    </div>
+    <div class="prog-card twostep">
+      <h4>🔍 2-Step RAG</h4>
+      <ul>
+        <li>Rewrite → retrieve → rerank → generate</li>
+        <li>Better retrieval quality</li>
+        <li>Still a fixed pipeline</li>
+        <li>Deterministic execution</li>
+      </ul>
+    </div>
+    <div class="prog-card agentic">
+      <h4>🤖 Agentic RAG</h4>
+      <ul>
+        <li>Agent decides when to retrieve</li>
+        <li>Chooses which source to use</li>
+        <li>Can retrieve multiple times</li>
+        <li>Self-corrects bad results</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Multi-Source Agentic RAG</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">agentic_rag.py</span></div>
+    <pre><code class="language-python">from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+from langchain.tools import tool
+from langchain_community.tools import TavilySearchResults
+
+# ── Define multiple retrieval sources as distinct tools ────────────────────────
+# The agent reads the tool descriptions and decides which to call.
+# Clear descriptions are critical — they teach the agent when to use each source.
+
+@tool
+def search_internal_docs(query: str) -> str:
+    """Search the internal company knowledge base — product documentation,
+    engineering specs, policy documents, and internal procedures.
+    Use this for: company policies, product specs, internal processes, howtos.
+    Do NOT use for: current news, competitor info, general world knowledge.
+
+    Args:
+        query: The specific topic or question to search for internally.
+    """
+    docs = internal_retriever.invoke(query)
+    if not docs:
+        return "No relevant internal documentation found."
+    return "\n\n---\n\n".join([
+        f"[{doc.metadata.get('source')}]\n{doc.page_content}"
+        for doc in docs[:4]
+    ])
+
+@tool
+def search_customer_cases(query: str) -> str:
+    """Search resolved support tickets and customer case history.
+    Use this for: similar past issues, known bugs, workarounds, customer FAQs.
+
+    Args:
+        query: The issue or symptom to search for in case history.
+    """
+    cases = case_retriever.invoke(query)
+    return "\n\n".join([
+        f"[Case #{c.metadata.get('case_id')}] {c.page_content}"
+        for c in cases[:3]
+    ])
+
+@tool
+def search_web(query: str) -> str:
+    """Search the public web for current information, news, and external resources.
+    Use this for: recent events, competitor information, general knowledge,
+    anything that wouldn't be in internal documentation.
+    Prefer internal sources first — only use this if internal search fails.
+
+    Args:
+        query: The web search query.
+    """
+    search = TavilySearchResults(max_results=3)
+    results = search.invoke(query)
+    return "\n\n".join([r["content"] for r in results])
+
+@tool
+def search_runbooks(query: str) -> str:
+    """Search operational runbooks and incident playbooks.
+    Use this for: step-by-step procedures, incident response, deployment steps.
+
+    Args:
+        query: The operational task or incident type to look up.
+    """
+    docs = runbook_retriever.invoke(query)
+    return "\n\n".join([d.page_content for d in docs[:2]])
+
+# ── Agentic RAG: the model decides which tools to call ────────────────────────
+agent = create_agent(
+    model=init_chat_model("openai:gpt-4o"),
+    tools=[search_internal_docs, search_customer_cases, search_runbooks, search_web],
+    system_prompt="""You are a technical support assistant with access to multiple knowledge sources.
+
+ALWAYS search before answering. Strategy:
+1. Start with search_internal_docs for product/policy questions
+2. Use search_customer_cases for troubleshooting or "has this happened before?" questions
+3. Use search_runbooks for step-by-step operational tasks
+4. Only use search_web if internal sources don't have the answer
+
+If the first search doesn't give you enough information, search again with different terms.
+Always cite your sources in the response.""",
+)</code></pre>
+  </div>
+
+  <h2>Self-Correcting RAG — Relevance Checking</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">self_correcting_rag.py</span></div>
+    <pre><code class="language-python">from langchain.chat_models import init_chat_model
+from langchain_core.messages import HumanMessage, SystemMessage
+from pydantic import BaseModel
+from typing import Literal
+
+grader_llm = init_chat_model("openai:gpt-4o-mini")
+
+class RelevanceGrade(BaseModel):
+    score: Literal["relevant", "not_relevant"]
+    reason: str
+
+grader = grader_llm.with_structured_output(RelevanceGrade)
+
+def grade_relevance(question: str, document: str) -> bool:
+    """Return True if the document is relevant to the question."""
+    result = grader.invoke([
+        SystemMessage("Grade whether the document is relevant to answering the user's question. Be strict."),
+        HumanMessage(f"Question: {question}\n\nDocument:\n{document[:500]}")
+    ])
+    return result.score == "relevant"
+
+@tool
+def smart_search_docs(query: str) -> str:
+    """Search internal docs with automatic relevance checking and re-retrieval.
+
+    If the initial results aren't relevant, automatically retries with
+    a rephrased query before returning results.
+
+    Args:
+        query: The question to search for.
+    """
+    # Initial retrieval
+    docs = retriever.invoke(query)
+
+    # Grade each result
+    relevant_docs = [d for d in docs if grade_relevance(query, d.page_content)]
+
+    # If nothing relevant, try to rephrase and retry once
+    if not relevant_docs:
+        # Ask LLM to rephrase
+        rephrase_response = init_chat_model("openai:gpt-4o-mini").invoke([
+            SystemMessage("Rephrase this search query to find better results in a technical document database. Return ONLY the rephrased query, nothing else."),
+            HumanMessage(query)
+        ])
+        rephrased = rephrase_response.content.strip()
+
+        # Retry with rephrased query
+        docs = retriever.invoke(rephrased)
+        relevant_docs = [d for d in docs if grade_relevance(query, d.page_content)]
+
+    if not relevant_docs:
+        return "I couldn't find relevant documentation for this question. Consider searching the web."
+
+    return "\n\n---\n\n".join([d.page_content for d in relevant_docs[:4]])</code></pre>
+  </div>
+
+  <h2>Corrective RAG — Fallback to Web Search</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">corrective_rag.py</span></div>
+    <pre><code class="language-python">from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+from langchain.tools import tool
+
+# Corrective RAG pattern: internal → web fallback is handled transparently
+@tool
+def search_knowledge_base_with_fallback(query: str) -> str:
+    """Search the knowledge base. Automatically falls back to web search
+    if internal documentation doesn't contain relevant information.
+
+    Args:
+        query: The question to search for.
+    """
+    # 1. Try internal docs first
+    docs = retriever.invoke(query)
+    relevant = [d for d in docs if grade_relevance(query, d.page_content)]
+
+    if relevant:
+        sources = "\n\n---\n\n".join([
+            f"[Internal source: {d.metadata.get('source')}]\n{d.page_content}"
+            for d in relevant[:4]
+        ])
+        return f"Found in internal docs:\n{sources}"
+
+    # 2. Internal docs insufficient — fall back to web
+    print("[Corrective RAG] Internal docs insufficient, falling back to web search")
+    search = TavilySearchResults(max_results=4)
+    web_results = search.invoke(query)
+
+    if web_results:
+        web_content = "\n\n---\n\n".join([
+            f"[Web source: {r.get('url')}]\n{r['content']}"
+            for r in web_results
+        ])
+        return f"Not found internally. Web search results:\n{web_content}"
+
+    return "No relevant information found in internal docs or web search."
+
+# Simple agent using corrective RAG
+agent = create_agent(
+    model=init_chat_model("openai:gpt-4o-mini"),
+    tools=[search_knowledge_base_with_fallback],
+    system_prompt="Answer questions using the knowledge base. Always cite your sources.",
+)</code></pre>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-icon">💡</div>
+    <div class="callout-content">
+      <strong>Which pattern to use when?</strong>
+      <p>Use <strong>basic RAG</strong> for simple QA over a single well-curated knowledge base. Use <strong>2-step RAG</strong> when retrieval quality is the bottleneck — vague queries, multi-turn conversations. Use <strong>agentic RAG</strong> when you have multiple sources and the agent needs to choose, or when questions are complex enough to need iterative retrieval. Use <strong>corrective RAG</strong> when internal knowledge gaps are common and you need a graceful fallback.</p>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: agentic RAG can hallucinate sources</strong>
+      <p>When an agent searches multiple sources and synthesizes results, it can accidentally attribute facts from one source to another, or blend information in ways that aren't supported by either source. Always include source citations in your system prompt and validate them. In high-stakes deployments, add an output guardrail that checks whether quoted text appears in the retrieved documents.</p>
+    </div>
+  </div>
+
+  <div class="use-case">
+    <h4>🏥 Medical Reference Assistant</h4>
+    <p>A clinical decision support tool uses agentic RAG with three sources: a vector store of clinical guidelines, a database of drug interactions, and a live web search for breaking pharmacovigilance alerts. When a clinician asks about a novel drug combination, the agent first checks guidelines (authoritative, current), then drug interactions (structured database), then web search (recent safety signals). If the relevance grader finds the clinical guideline outdated for this specific drug combo, it falls back to web search and clearly labels the source as external. The multi-source, self-correcting design is critical in a domain where outdated information can cause patient harm.</p>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>Key Takeaways</strong>
+      <p>Agentic RAG lets the model choose which source to search, when to search, and whether to search again. Implement by exposing retrieval sources as distinct tools with clear descriptions. Add self-correction by grading retrieved documents for relevance and re-retrieving if needed. Use corrective RAG (internal → web fallback) for open-domain questions. The quality of tool descriptions directly determines how well the agent routes — treat them as documentation, not afterthoughts.</p>
+    </div>
+  </div>
+
+  <div class="part-badge">
+    🎉 Part 6 complete! You now understand the full RAG stack: basic indexing, 2-step precision retrieval, and agentic adaptive retrieval. Next: Part 7 — building the frontend that users see.
+  </div>
+
+  <div class="mod-nav">
+    <a href="23-2step-rag.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 23: 2-Step RAG</strong></div>
+    </a>
+    <a href="25-frontend-architecture.html" class="nav-btn next">
+      <div><small>Next up</small><strong>Module 25: Frontend Architecture →</strong></div>
+      <span style="font-size:20px">➡</span>
+    </a>
+  </div>
+
+</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

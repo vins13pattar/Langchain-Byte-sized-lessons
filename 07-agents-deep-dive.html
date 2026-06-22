@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 07: Agents Deep Dive — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F0F4F8;--surface:#FFF;--sidebar-bg:#0F172A;--sidebar-w:272px;--accent:#006DDD;--accent-light:#E0F2FE;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--green:#16A34A;--orange:#EA580C;--purple:#7C3AED}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:#F5F3FF;color:#6D28D9;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#F5F3FF,#EDE9FE);border:1px solid #C4B5FD;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#5B21B6;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+h3{font-size:1.05rem;font-weight:700;color:#1E293B;margin:28px 0 10px}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#EFF6FF;border-left:4px solid var(--accent)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+.diagram-wrap{background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;margin:28px 0}
+.diagram-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:18px}
+
+/* param reference */
+.param-ref{display:grid;gap:10px;margin:20px 0}
+.pr-row{background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;gap:16px;align-items:flex-start}
+.pr-name{font-family:monospace;font-size:13px;font-weight:700;color:#0F172A;min-width:180px;flex-shrink:0}
+.pr-desc{font-size:13.5px;color:#475569;flex:1}
+.pr-tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;margin-left:4px}
+.pr-tag.req{background:#FEE2E2;color:#BE123C}
+.pr-tag.opt{background:#F0FDF4;color:#15803D}
+.pr-tag.adv{background:#F5F3FF;color:#6D28D9}
+
+.use-case{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #BAE6FD}
+.use-case h4{color:#1E40AF;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn.next{justify-content:flex-end;text-align:right}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="sidebar-brand">🦜 LangChain Course</div><div class="sidebar-title">Byte-Sized Lessons</div></div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="07-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 07 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link active"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 2 · Module 07 · Deep Dive</div>
+  <h1>Agents — Deep Dive into <code style="font-size:1.8rem">create_agent()</code></h1>
+  <div class="mod-meta">
+    <span>⏱ ~25 min</span><span>💻 Runnable code</span><span>🤖 ReAct loop diagram</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll learn:</strong> Every parameter of <code>create_agent()</code>, static vs. dynamic configuration, how to define custom agent state (AgentState), all invocation patterns (invoke, stream, batch, async), and how the ReAct loop works under the hood.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px 22px;margin:28px 0">
+    <div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">📐 Structural overview — create_agent anatomy</div>
+    <img src="diagrams/07-create-agent.svg" alt="create_agent anatomy diagram" loading="lazy" style="width:100%;height:auto;display:block;border:1px solid #F1F5F9;border-radius:8px;background:#fff">
+    <p style="font-size:12.5px;color:#64748B;margin:12px 0 0">
+      <a href="diagrams/07-create-agent.svg" target="_blank" style="color:#006DDD;font-weight:600;text-decoration:none">↗ Open full size</a>
+      &nbsp;&middot;&nbsp;
+      <a href="diagrams/07-create-agent.excalidraw" download style="color:#006DDD;font-weight:600;text-decoration:none">⬇ Edit in Excalidraw</a>
+      &nbsp;— labels use real LangChain classes.
+    </p>
+  </div>
+
+
+  <h2>The ReAct Loop — Under the Hood</h2>
+  <p>Every LangChain agent runs a <strong>ReAct loop</strong> (Reasoning + Acting). Understanding this loop is the key to predicting agent behavior, debugging problems, and tuning performance.</p>
+
+  <!-- INTERACTIVE REACT LOOP -->
+  <div class="diagram-wrap">
+    <div class="diagram-label">🤖 The ReAct Loop — interactive (click a node)</div>
+    <svg id="react-svg" viewBox="0 0 680 300" width="100%" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arr2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#94A3B8"/>
+        </marker>
+      </defs>
+
+      <!-- Nodes -->
+      <rect id="n-start" x="20" y="120" width="100" height="60" rx="10" fill="#EFF6FF" stroke="#006DDD" stroke-width="2" class="react-node" data-info="start" style="cursor:pointer"/>
+      <text x="70" y="148" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A" pointer-events="none">User</text>
+      <text x="70" y="165" text-anchor="middle" font-size="11" fill="#0369A1" pointer-events="none">Message</text>
+
+      <rect id="n-reason" x="180" y="100" width="120" height="100" rx="10" fill="#F5F3FF" stroke="#7C3AED" stroke-width="2" class="react-node" data-info="reason" style="cursor:pointer"/>
+      <text x="240" y="135" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A" pointer-events="none">🤔 Reason</text>
+      <text x="240" y="155" text-anchor="middle" font-size="10.5" fill="#6D28D9" pointer-events="none">Model reads all</text>
+      <text x="240" y="170" text-anchor="middle" font-size="10.5" fill="#6D28D9" pointer-events="none">messages, decides</text>
+      <text x="240" y="185" text-anchor="middle" font-size="10.5" fill="#6D28D9" pointer-events="none">next step</text>
+
+      <!-- Decision diamond -->
+      <polygon id="n-decide" points="380,130 430,155 380,180 330,155" fill="#FFF7ED" stroke="#EA580C" stroke-width="2" class="react-node" data-info="decide" style="cursor:pointer"/>
+      <text x="380" y="152" text-anchor="middle" font-size="11" font-weight="700" fill="#C2410C" pointer-events="none">Tool</text>
+      <text x="380" y="166" text-anchor="middle" font-size="11" font-weight="700" fill="#C2410C" pointer-events="none">call?</text>
+
+      <rect id="n-act" x="480" y="100" width="100" height="60" rx="10" fill="#F0FDF4" stroke="#16A34A" stroke-width="2" class="react-node" data-info="act" style="cursor:pointer"/>
+      <text x="530" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A" pointer-events="none">🔧 Act</text>
+      <text x="530" y="146" text-anchor="middle" font-size="10.5" fill="#15803D" pointer-events="none">Execute tool</text>
+      <text x="530" y="161" text-anchor="middle" font-size="10.5" fill="#15803D" pointer-events="none">→ ToolMessage</text>
+
+      <rect id="n-answer" x="480" y="210" width="100" height="60" rx="10" fill="#FFF7ED" stroke="#F59E0B" stroke-width="2" class="react-node" data-info="answer" style="cursor:pointer"/>
+      <text x="530" y="238" text-anchor="middle" font-size="12" font-weight="700" fill="#0F172A" pointer-events="none">✅ Answer</text>
+      <text x="530" y="256" text-anchor="middle" font-size="10.5" fill="#B45309" pointer-events="none">Return text</text>
+
+      <!-- Arrows -->
+      <line x1="120" y1="150" x2="178" y2="150" stroke="#94A3B8" stroke-width="1.5" marker-end="url(#arr2)"/>
+      <line x1="300" y1="150" x2="328" y2="150" stroke="#94A3B8" stroke-width="1.5" marker-end="url(#arr2)"/>
+      <!-- YES → Act -->
+      <line x1="430" y1="150" x2="478" y2="130" stroke="#94A3B8" stroke-width="1.5" marker-end="url(#arr2)"/>
+      <text x="450" y="133" font-size="10" fill="#64748B">Yes</text>
+      <!-- NO → Answer -->
+      <line x1="380" y1="182" x2="480" y2="228" stroke="#94A3B8" stroke-width="1.5" marker-end="url(#arr2)"/>
+      <text x="410" y="218" font-size="10" fill="#64748B">No</text>
+      <!-- Act → back to Reason (loop) -->
+      <path d="M530 100 Q530 40 240 40 Q180 40 180 98" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr2)"/>
+      <text x="360" y="30" font-size="10" fill="#94A3B8" text-anchor="middle">loop (observe → reason)</text>
+
+      <!-- Max iterations note -->
+      <text x="340" y="295" text-anchor="middle" font-size="10" fill="#94A3B8">default max_iterations = 25 per run</text>
+    </svg>
+    <div id="react-info" style="margin-top:14px;padding:14px 16px;background:#F8FAFC;border-radius:8px;font-size:13px;color:#334155;min-height:52px;border:1px solid var(--border)">
+      👆 <strong>Click any node</strong> to see what happens at that step.
+    </div>
+  </div>
+
+  <h2>Complete <code class="inline">create_agent()</code> Reference</h2>
+
+  <div class="param-ref">
+    <div class="pr-row">
+      <div class="pr-name">model <span class="pr-tag req">required</span></div>
+      <div class="pr-desc">The reasoning engine. Pass an initialized model object (<code class="inline">init_chat_model(...)</code>) for static config, or a model string like <code class="inline">"openai:gpt-4o"</code> for dynamic config (swappable per invocation).</div>
+    </div>
+    <div class="pr-row">
+      <div class="pr-name">tools <span class="pr-tag opt">optional</span></div>
+      <div class="pr-desc">List of tool functions (decorated with <code class="inline">@tool</code>) or tool objects. The agent will be able to call any tool in this list. Can also be a callable that returns a list (dynamic tools based on state).</div>
+    </div>
+    <div class="pr-row">
+      <div class="pr-name">system_prompt <span class="pr-tag opt">optional</span></div>
+      <div class="pr-desc">A string system instruction. Gets prepended to every conversation as a SystemMessage. For dynamic prompts (based on state/context), use the <code class="inline">dynamic_prompt</code> parameter instead.</div>
+    </div>
+    <div class="pr-row">
+      <div class="pr-name">checkpointer <span class="pr-tag opt">optional</span></div>
+      <div class="pr-desc">Enables short-term memory (conversation history across turns). Pass <code class="inline">InMemorySaver()</code> for in-process memory, or a database-backed saver for production. Requires <code class="inline">thread_id</code> at invocation time.</div>
+    </div>
+    <div class="pr-row">
+      <div class="pr-name">store <span class="pr-tag opt">optional</span></div>
+      <div class="pr-desc">Long-term memory store. Persists across sessions. Pass <code class="inline">InMemoryStore()</code> for in-process, or <code class="inline">PostgresStore</code> for persistent. Accessible from tools via <code class="inline">runtime.store</code>.</div>
+    </div>
+    <div class="pr-row">
+      <div class="pr-name">state_schema <span class="pr-tag adv">advanced</span></div>
+      <div class="pr-desc">A TypedDict class that extends the agent's state beyond just messages. Add custom fields (e.g., <code class="inline">{"user_name": str, "task_status": str}</code>). Tools can read and update these via <code class="inline">Command</code> returns.</div>
+    </div>
+    <div class="pr-row">
+      <div class="pr-name">context_schema <span class="pr-tag adv">advanced</span></div>
+      <div class="pr-desc">Defines what external context can be passed at invocation time (e.g., user identity, tenant ID). Tools receive this via <code class="inline">runtime.context</code>. Never sent to the model.</div>
+    </div>
+    <div class="pr-row">
+      <div class="pr-name">middleware <span class="pr-tag adv">advanced</span></div>
+      <div class="pr-desc">List of middleware classes that intercept the agent loop at hook points. See Modules 13–15 for full coverage.</div>
+    </div>
+    <div class="pr-row">
+      <div class="pr-name">structured_output <span class="pr-tag adv">advanced</span></div>
+      <div class="pr-desc">A Pydantic model class to use as the agent's response format. The model is forced to return JSON matching this schema as its final answer. See Module 08.</div>
+    </div>
+    <div class="pr-row">
+      <div class="pr-name">name <span class="pr-tag opt">optional</span></div>
+      <div class="pr-desc">A string name for this agent. Used in multi-agent systems so subagents can identify which agent they're communicating with. See Module 20.</div>
+    </div>
+  </div>
+
+  <h2>Complete Working Example</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">full_agent.py</span></div>
+    <pre><code class="language-python">from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+from langchain.tools import tool
+from langchain_core.messages import HumanMessage
+from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.store.memory import InMemoryStore
+from typing import TypedDict, Annotated
+from langgraph.graph.message import add_messages
+
+# ── 1. Custom state schema ────────────────────────────────────────────────────
+class AppState(TypedDict):
+    messages: Annotated[list, add_messages]  # always required
+    # custom fields:
+    items_retrieved: int
+    last_search_query: str
+
+# ── 2. Tools ──────────────────────────────────────────────────────────────────
+@tool
+def search_catalog(query: str, max_results: int = 5) -> list[dict]:
+    """Search the product catalog.
+
+    Args:
+        query: Search terms.
+        max_results: Max products to return (1-20).
+    """
+    # mock implementation
+    return [{"name": f"Product for '{query}'", "price": 29.99}] * max_results
+
+@tool
+def get_stock_level(product_id: str) -> dict:
+    """Check stock level for a product.
+
+    Args:
+        product_id: The product ID to check.
+    """
+    return {"product_id": product_id, "in_stock": True, "quantity": 42}
+
+# ── 3. Create the agent ───────────────────────────────────────────────────────
+agent = create_agent(
+    model=init_chat_model("openai:gpt-4o", temperature=0),
+    tools=[search_catalog, get_stock_level],
+    system_prompt=(
+        "You are a helpful product catalog assistant. "
+        "Search the catalog and check stock levels when asked. "
+        "Always include prices in your responses."
+    ),
+    state_schema=AppState,
+    checkpointer=InMemorySaver(),   # enables multi-turn conversations
+    store=InMemoryStore(),          # enables long-term memory
+)
+
+# ── 4. Single-turn invocation ─────────────────────────────────────────────────
+result = agent.invoke({
+    "messages": [HumanMessage("Find me blue widgets, check if they're in stock")]
+})
+print(result["messages"][-1].content)
+
+# ── 5. Multi-turn (requires thread_id with checkpointer) ─────────────────────
+config = {"configurable": {"thread_id": "user-session-123"}}
+
+result1 = agent.invoke(
+    {"messages": [HumanMessage("Search for red gadgets")]},
+    config=config,
+)
+print(result1["messages"][-1].content)
+
+# Second turn — agent remembers the first turn!
+result2 = agent.invoke(
+    {"messages": [HumanMessage("Are any of those in stock?")]},
+    config=config,
+)
+print(result2["messages"][-1].content)  # knows what "those" refers to
+
+# ── 6. Inspect the final state ────────────────────────────────────────────────
+state = agent.get_state(config)
+print(f"Total messages: {len(state.values['messages'])}")
+print(f"Custom field: {state.values.get('items_retrieved')}")</code></pre>
+  </div>
+
+  <h2>Dynamic Tools and Dynamic Prompts</h2>
+  <p>Tools and system prompts can change per-invocation based on state or context:</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">dynamic_config.py</span></div>
+    <pre><code class="language-python">from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+from langchain.tools import tool
+
+@tool
+def admin_tool(action: str) -> str:
+    """Perform an admin action (admin users only)."""
+    return f"Admin action performed: {action}"
+
+@tool
+def user_tool(query: str) -> str:
+    """Answer a regular user query."""
+    return f"Here's the answer: {query}"
+
+# Dynamic tools — receives state, returns tool list
+def get_tools_for_user(state: dict) -> list:
+    """Return different tools based on user role in state."""
+    role = state.get("user_role", "user")
+    if role == "admin":
+        return [admin_tool, user_tool]
+    return [user_tool]
+
+# Dynamic prompt — called before each model call
+def get_system_prompt(state: dict) -> str:
+    """Return a personalized system prompt."""
+    name = state.get("user_name", "there")
+    role = state.get("user_role", "user")
+    return f"You are helping {name} (role: {role}). Be concise and professional."
+
+agent = create_agent(
+    model="openai:gpt-4o",
+    tools=get_tools_for_user,       # callable, not list
+    dynamic_prompt=get_system_prompt, # called before each model invocation
+)</code></pre>
+  </div>
+
+  <h2>All Invocation Patterns</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">invocation_patterns.py</span></div>
+    <pre><code class="language-python">from langchain_core.messages import HumanMessage
+import asyncio
+
+# ── Synchronous invoke (blocking) ─────────────────────────────────────────────
+result = agent.invoke({"messages": [HumanMessage("Hello")]})
+answer = result["messages"][-1].content
+
+# ── Async invoke ──────────────────────────────────────────────────────────────
+async def run():
+    result = await agent.ainvoke({"messages": [HumanMessage("Hello")]})
+    return result["messages"][-1].content
+asyncio.run(run())
+
+# ── Streaming (token by token) ────────────────────────────────────────────────
+for chunk in agent.stream(
+    {"messages": [HumanMessage("Tell me a story")]},
+    stream_mode="messages"
+):
+    # chunk is (message_or_chunk, metadata)
+    msg, metadata = chunk
+    if hasattr(msg, 'content') and msg.content:
+        print(msg.content, end="", flush=True)
+print()
+
+# ── Stream with full state updates ────────────────────────────────────────────
+for event in agent.stream(
+    {"messages": [HumanMessage("Search for something")]},
+    stream_mode="values"  # emits full state after each step
+):
+    # event is the full agent state at each step
+    last_msg = event["messages"][-1]
+    print(f"Step: {last_msg.type} - {str(last_msg.content)[:50]}")
+
+# ── Batch processing ──────────────────────────────────────────────────────────
+inputs = [
+    {"messages": [HumanMessage("Query 1")]},
+    {"messages": [HumanMessage("Query 2")]},
+    {"messages": [HumanMessage("Query 3")]},
+]
+results = agent.batch(inputs)  # runs all in parallel
+for r in results:
+    print(r["messages"][-1].content)
+
+# ── Input formats — all equivalent ───────────────────────────────────────────
+# Dict with role
+agent.invoke({"messages": [{"role": "user", "content": "Hi"}]})
+# HumanMessage object
+agent.invoke({"messages": [HumanMessage("Hi")]})
+# Shorthand — just a string (for simple single-turn)
+agent.invoke({"messages": "Hi"})  # auto-wrapped</code></pre>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: checkpointer requires thread_id</strong>
+      <p>If you create an agent with a <code class="inline">checkpointer</code> for multi-turn memory but forget to pass <code class="inline">config={"configurable": {"thread_id": "..."}}</code> at invocation, the agent will still run — but it won't save state between turns. Each invocation will start fresh with no memory. Always pass <code class="inline">thread_id</code> when using checkpointers.</p>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: max_iterations default is 25</strong>
+      <p>The agent loop will run a maximum of 25 tool-call iterations before forcing a stop. For complex multi-step tasks this might not be enough. Override: <code class="inline">agent.invoke(..., config={"recursion_limit": 50})</code>. Setting this too high without a timeout is a production risk — an infinite loop will keep calling tools (and billing you) until it hits the limit.</p>
+    </div>
+  </div>
+
+  <h2>Real-World Use Case</h2>
+  <div class="use-case">
+    <h4>🏥 Medical Research Assistant</h4>
+    <p>A research agent uses <code class="inline">state_schema</code> to track <code class="inline">papers_found</code>, <code class="inline">methodology_confirmed</code>, and <code class="inline">requires_human_review</code>. Dynamic tools give verified researchers access to full-text paper APIs and experimental databases, while unverified users only get abstract search. The <code class="inline">dynamic_prompt</code> personalizes each session based on the researcher's specialty. Thread-based checkpointing allows multi-day research sessions — the agent picks up exactly where it left off.</p>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>Key Takeaways</strong>
+      <p>The ReAct loop is the core: Reason → tool call? → Act → Observe → Reason (repeat). <code class="inline">create_agent()</code> has 10 parameters — most are optional. Add <code class="inline">checkpointer</code> + <code class="inline">thread_id</code> for multi-turn memory. Use <code class="inline">state_schema</code> to add custom fields. Use dynamic tools/prompts for per-user customization. Modules 09–15 explore each capability in depth.</p>
+    </div>
+  </div>
+
+  <div class="mod-nav">
+    <a href="06-tools-advanced.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 06: Tools — Advanced</strong></div>
+    </a>
+    <a href="08-structured-output.html" class="nav-btn next">
+      <div><small>Next up</small><strong>Module 08: Structured Output →</strong></div>
+      <span style="font-size:20px">➡</span>
+    </a>
+  </div>
+
+</div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+<script>
+const reactInfo = {
+  start: {title: 'User Message', body: 'The user sends a message. It gets wrapped in a HumanMessage and appended to the conversation history (messages list). On turn 2+, all previous messages are already in the list — the model gets the full history every time.'},
+  reason: {title: '🤔 Reason (Model Call)', body: 'The model receives the full message list + the list of available tool schemas. It decides: should I call a tool, or do I have enough information to answer? This decision is encoded in the AIMessage it returns — either with tool_calls (tool request) or with plain text content (final answer).'},
+  decide: {title: 'Decision: Tool Call?', body: 'LangChain reads the AIMessage returned by the model. If it contains tool_calls, execution branches to "Act". If not (just plain text content), the loop exits with this as the final answer.'},
+  act: {title: '🔧 Act (Tool Execution)', body: 'LangChain executes the Python tool function with the arguments the model specified. The return value is wrapped in a ToolMessage with the tool_call_id from the AIMessage. This ToolMessage is appended to the conversation history — the model will "see" it on the next iteration.'},
+  answer: {title: '✅ Answer (Final)', body: 'When the model returns an AIMessage with no tool_calls, the loop exits. This final AIMessage is the agent\'s response. result["messages"][-1] gives you this message. result["messages"] gives you the full history.'},
+};
+
+document.querySelectorAll('.react-node').forEach(node => {
+  node.addEventListener('click', () => {
+    const key = node.getAttribute('data-info');
+    const d = reactInfo[key];
+    if (d) {
+      document.getElementById('react-info').innerHTML =
+        `<strong style="color:#0F172A">${d.title}</strong><br><span style="color:#475569">${d.body}</span>`;
+    }
+    document.querySelectorAll('.react-node').forEach(n => n.setAttribute('opacity', '0.6'));
+    node.setAttribute('opacity', '1');
+    node.style.filter = 'brightness(0.95)';
+  });
+});
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 11: Event Streaming — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F0F4F8;--surface:#FFF;--sidebar-bg:#0F172A;--sidebar-w:272px;--accent:#006DDD;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--green:#16A34A;--orange:#EA580C;--purple:#7C3AED}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:#ECFDF5;color:#047857;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#ECFDF5,#D1FAE5);border:1px solid #A7F3D0;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#065F46;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+h3{font-size:1.05rem;font-weight:700;color:#1E293B;margin:28px 0 10px}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#EFF6FF;border-left:4px solid var(--accent)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+
+/* event type table */
+.event-table{width:100%;border-collapse:collapse;margin:20px 0;font-size:13.5px}
+.event-table th{text-align:left;padding:10px 14px;background:#F8FAFC;border-bottom:2px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted)}
+.event-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.event-table tr:last-child td{border-bottom:none}
+.event-table tr:hover td{background:#F8FAFC}
+.event-name{font-family:monospace;font-size:12.5px;font-weight:700;white-space:nowrap}
+.event-desc{color:#475569}
+.event-when{color:var(--muted);font-size:12px}
+
+.use-case{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #BAE6FD}
+.use-case h4{color:#1E40AF;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn.next{justify-content:flex-end;text-align:right}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="sidebar-brand">🦜 LangChain Course</div><div class="sidebar-title">Byte-Sized Lessons</div></div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="11-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 11 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link active"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 3 · Module 11 · Streaming</div>
+  <h1>Event Streaming with <code style="font-size:1.6rem">astream_events()</code></h1>
+  <div class="mod-meta">
+    <span>⏱ ~20 min</span><span>💻 Runnable code</span><span>🎯 Event filtering</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll learn:</strong> How <code>astream_events()</code> gives you a structured event bus instead of raw chunks, the key event types and when they fire, how to filter events for specific use cases, and how to emit custom events from inside tools.</p>
+  </div>
+
+  <div class="callout analogy">
+    <div class="callout-icon">📡</div>
+    <div class="callout-content">
+      <strong>Analogy: event bus vs. raw byte stream</strong>
+      <p><code>stream()</code> is like reading a raw serial port — you get bytes and have to figure out what they mean. <code>astream_events()</code> is like subscribing to a typed message bus: every event has a <code>name</code>, <code>event</code>, and <code>data</code> field. You subscribe to exactly what you care about — model tokens, tool starts, tool ends, custom events — and ignore the rest. Much easier to build a rich UI from.</p>
+    </div>
+  </div>
+
+  <h2>stream() vs. astream_events() — When to Use Each</h2>
+  <p><strong>Use <code class="inline">stream()</code></strong> when you need simplicity: token-by-token output for a basic chat UI, or step-by-step debugging. It has lower overhead.</p>
+  <p><strong>Use <code class="inline">astream_events()</code></strong> when you need granularity: different UI reactions for model start, tool calls, tool results, and custom tool events (like progress updates from a long-running tool). It's the right tool for production chat UIs with multiple visual states.</p>
+
+  <h2>The Event Lifecycle</h2>
+
+  <table class="event-table">
+    <tr>
+      <th>Event Name</th><th>When it fires</th><th>Key data</th>
+    </tr>
+    <tr>
+      <td class="event-name">on_chain_start</td>
+      <td class="event-when">Agent starts processing</td>
+      <td class="event-desc"><code>input</code> — the messages sent in</td>
+    </tr>
+    <tr>
+      <td class="event-name">on_chat_model_start</td>
+      <td class="event-when">Model call begins</td>
+      <td class="event-desc"><code>input</code> — messages sent to model</td>
+    </tr>
+    <tr>
+      <td class="event-name">on_chat_model_stream</td>
+      <td class="event-when">Each token from the model</td>
+      <td class="event-desc"><code>chunk</code> — AIMessageChunk with text or tool_call_chunks</td>
+    </tr>
+    <tr>
+      <td class="event-name">on_chat_model_end</td>
+      <td class="event-when">Model call completes</td>
+      <td class="event-desc"><code>output</code> — complete AIMessage</td>
+    </tr>
+    <tr>
+      <td class="event-name">on_tool_start</td>
+      <td class="event-when">Tool execution begins</td>
+      <td class="event-desc"><code>input</code> — tool arguments dict</td>
+    </tr>
+    <tr>
+      <td class="event-name">on_tool_end</td>
+      <td class="event-when">Tool execution completes</td>
+      <td class="event-desc"><code>output</code> — tool return value (ToolMessage)</td>
+    </tr>
+    <tr>
+      <td class="event-name">on_custom_event</td>
+      <td class="event-when">Tool emits a custom event</td>
+      <td class="event-desc"><code>name</code>, <code>data</code> — your custom payload</td>
+    </tr>
+    <tr>
+      <td class="event-name">on_chain_end</td>
+      <td class="event-when">Agent finishes</td>
+      <td class="event-desc"><code>output</code> — final agent state</td>
+    </tr>
+  </table>
+
+  <h2>Basic astream_events() Usage</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">event_streaming.py</span></div>
+    <pre><code class="language-python">import asyncio
+from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+from langchain.tools import tool
+from langchain_core.messages import HumanMessage
+
+@tool
+def search_database(query: str) -> str:
+    """Search the product database."""
+    return f"Found: Widget A, Widget B, Widget C for query '{query}'"
+
+agent = create_agent(
+    model=init_chat_model("openai:gpt-4o-mini"),
+    tools=[search_database],
+)
+
+async def main():
+    input_data = {"messages": [HumanMessage("Search for blue widgets")]}
+
+    # astream_events returns structured event dicts
+    async for event in agent.astream_events(input_data, version="v2"):
+        event_type = event["event"]
+        event_name = event.get("name", "")
+        data = event.get("data", {})
+
+        if event_type == "on_chat_model_stream":
+            # Token-by-token text output
+            chunk = data.get("chunk")
+            if chunk and hasattr(chunk, "content") and chunk.content:
+                print(chunk.content, end="", flush=True)
+
+        elif event_type == "on_tool_start":
+            # Tool is about to run
+            tool_input = data.get("input", {})
+            print(f"\n[🔧 Calling: {event_name}({tool_input})]")
+
+        elif event_type == "on_tool_end":
+            # Tool finished
+            output = data.get("output")
+            print(f"[✅ Tool result: {str(output)[:60]}]")
+
+        elif event_type == "on_chain_end":
+            print("\n[Done]")
+
+asyncio.run(main())</code></pre>
+  </div>
+
+  <h2>Filtering Events by Type and Name</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">event_filtering.py</span></div>
+    <pre><code class="language-python">async def filtered_stream(agent, input_data):
+    # ── Only text tokens (no tool events) ─────────────────────────────────────
+    async for event in agent.astream_events(input_data, version="v2"):
+        if event["event"] == "on_chat_model_stream":
+            chunk = event["data"].get("chunk")
+            if chunk and chunk.content:
+                yield chunk.content
+
+    # ── Filter by specific tool name ───────────────────────────────────────────
+    async for event in agent.astream_events(input_data, version="v2"):
+        if event["event"] == "on_tool_start" and event["name"] == "search_database":
+            print(f"Searching: {event['data']['input']}")
+
+    # ── include/exclude filtering via parameters ───────────────────────────────
+    # Only events from specific tags (set via runnable.with_config):
+    async for event in agent.astream_events(
+        input_data,
+        version="v2",
+        include_names=["search_database", "get_weather"],  # only these tools
+        include_types=["on_tool_start", "on_tool_end"],    # only tool events
+    ):
+        print(event)
+
+    # ── Exclude noisy events ───────────────────────────────────────────────────
+    async for event in agent.astream_events(
+        input_data,
+        version="v2",
+        exclude_types=["on_chain_start", "on_chain_end"],  # skip chain wrapping
+    ):
+        print(f"{event['event']}: {str(event.get('data', ''))[:40]}")</code></pre>
+  </div>
+
+  <h2>Custom Events from Tools</h2>
+  <p>Long-running tools can emit progress events mid-execution using <code class="inline">runtime.stream_writer</code>. These surface as <code class="inline">on_custom_event</code> in the event stream.</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">custom_events.py</span></div>
+    <pre><code class="language-python">import asyncio
+import time
+from langchain.tools import tool
+from langchain.tools import ToolRuntime
+from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+from langchain_core.messages import HumanMessage
+
+@tool
+async def analyze_report(report_id: str, runtime: ToolRuntime) -> str:
+    """Analyze a large report. Sends progress updates.
+
+    Args:
+        report_id: The report to analyze.
+    """
+    steps = [
+        ("Downloading report...", 0),
+        ("Parsing content...", 25),
+        ("Running analysis...", 50),
+        ("Generating insights...", 75),
+        ("Finalizing...", 90),
+    ]
+
+    for message, progress in steps:
+        # Emit a custom event — visible via astream_events as on_custom_event
+        runtime.stream_writer({
+            "type": "progress",
+            "message": message,
+            "progress": progress,
+        })
+        await asyncio.sleep(0.5)  # simulate work
+
+    return f"Report {report_id}: 3 key risks identified, 2 opportunities found."
+
+agent = create_agent(
+    model=init_chat_model("openai:gpt-4o-mini"),
+    tools=[analyze_report],
+)
+
+async def main():
+    input_data = {"messages": [HumanMessage("Analyze report Q4-2024")]}
+
+    async for event in agent.astream_events(input_data, version="v2"):
+        if event["event"] == "on_custom_event":
+            # Progress events from the tool
+            data = event["data"]
+            if data.get("type") == "progress":
+                pct = data["progress"]
+                msg = data["message"]
+                bar = "█" * (pct // 10) + "░" * (10 - pct // 10)
+                print(f"\r[{bar}] {pct}% — {msg}", end="", flush=True)
+
+        elif event["event"] == "on_chat_model_stream":
+            chunk = event["data"].get("chunk")
+            if chunk and chunk.content:
+                print(chunk.content, end="", flush=True)
+
+asyncio.run(main())</code></pre>
+  </div>
+
+  <h2>Building a Multi-State Chat UI</h2>
+  <p>This pattern drives a rich UI with distinct visual states: thinking indicator → tool call banner → streaming text → done.</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">ui_state_machine.py</span></div>
+    <pre><code class="language-python">from enum import Enum
+
+class UIState(Enum):
+    IDLE = "idle"
+    THINKING = "thinking"       # model is reasoning
+    USING_TOOL = "using_tool"   # tool call in progress
+    STREAMING = "streaming"     # final answer tokens flowing
+    DONE = "done"
+
+async def drive_ui(agent, message: str):
+    """Returns a stream of (UIState, data) tuples."""
+    current_state = UIState.IDLE
+    input_data = {"messages": [HumanMessage(message)]}
+
+    async for event in agent.astream_events(input_data, version="v2"):
+        etype = event["event"]
+
+        if etype == "on_chat_model_start":
+            current_state = UIState.THINKING
+            yield current_state, {"msg": "Agent is thinking..."}
+
+        elif etype == "on_tool_start":
+            current_state = UIState.USING_TOOL
+            yield current_state, {
+                "tool": event["name"],
+                "args": event["data"].get("input", {}),
+            }
+
+        elif etype == "on_tool_end":
+            # Back to thinking before next model call
+            current_state = UIState.THINKING
+            yield current_state, {"msg": "Processing results..."}
+
+        elif etype == "on_chat_model_stream":
+            chunk = event["data"].get("chunk")
+            if chunk and chunk.content and not chunk.tool_call_chunks:
+                current_state = UIState.STREAMING
+                yield current_state, {"token": chunk.content}
+
+        elif etype == "on_chain_end":
+            current_state = UIState.DONE
+            yield current_state, {}
+
+# Usage:
+async def render():
+    async for state, data in drive_ui(agent, "Search for the latest AI news"):
+        if state == UIState.THINKING:
+            print(f"⏳ {data['msg']}")
+        elif state == UIState.USING_TOOL:
+            print(f"🔧 Calling {data['tool']} with {data['args']}")
+        elif state == UIState.STREAMING:
+            print(data["token"], end="", flush=True)
+        elif state == UIState.DONE:
+            print("\n✅ Done")
+
+import asyncio
+asyncio.run(render())</code></pre>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: always use version="v2"</strong>
+      <p><code class="inline">astream_events()</code> requires a <code class="inline">version</code> parameter. Always pass <code class="inline">version="v2"</code> — it's the current stable version. The v1 API has different event shapes and is considered legacy. If you omit <code class="inline">version</code>, you'll get a warning.</p>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: astream_events() is async only</strong>
+      <p>There is no synchronous <code class="inline">stream_events()</code>. If you're not in an async context, use <code class="inline">stream()</code> instead, or run the async version in an event loop with <code class="inline">asyncio.run()</code>. In FastAPI/Django async views this is fine natively.</p>
+    </div>
+  </div>
+
+  <h2>Real-World Use Case</h2>
+  <div class="use-case">
+    <h4>🔬 Research Agent with Live Progress</h4>
+    <p>A research assistant UI has four visual zones: a "Researching..." spinner (fires on <code class="inline">on_tool_start</code> for the web search tool), a sidebar showing "Sources found: 3" (fires on <code class="inline">on_tool_end</code>, parsing the results count), a progress bar from custom events emitted by a slow PDF parser tool, and a streaming text response zone (fires on <code class="inline">on_chat_model_stream</code>). All four zones update independently from the same <code class="inline">astream_events()</code> loop — the client filters by event type and routes to the right UI component.</p>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>Key Takeaways</strong>
+      <p>Use <code class="inline">astream_events(version="v2")</code> when you need typed events, not raw chunks. Key events: <code class="inline">on_chat_model_stream</code> (tokens), <code class="inline">on_tool_start/end</code> (tool lifecycle), <code class="inline">on_custom_event</code> (progress from tools). Filter with <code class="inline">include_names</code>, <code class="inline">include_types</code>. Emit custom events from tools via <code class="inline">runtime.stream_writer()</code>.</p>
+    </div>
+  </div>
+
+  <div class="mod-nav">
+    <a href="10-streaming.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 10: Streaming</strong></div>
+    </a>
+    <a href="12-long-term-memory.html" class="nav-btn next">
+      <div><small>Next up</small><strong>Module 12: Long-Term Memory →</strong></div>
+      <span style="font-size:20px">➡</span>
+    </a>
+  </div>
+
+</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

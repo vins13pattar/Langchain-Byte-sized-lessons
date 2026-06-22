@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beginner FAQ — LangChain Byte-Sized Lessons</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F0F4F8;--surface:#FFFFFF;--sidebar-bg:#0F172A;--sidebar-w:272px;
+  --accent:#006DDD;--accent-light:#E0F2FE;
+  --text:#1E293B;--muted:#64748B;--border:#E2E8F0;
+  --green:#16A34A;--orange:#EA580C;--purple:#7C3AED;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px;transition:color 0.15s}
+.sidebar-home:hover{color:#94A3B8}
+.sidebar-home.active{color:#7FC8FF}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:860px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent-light);color:#0369A1;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.lead{font-size:1.05rem;color:var(--muted);margin-bottom:24px;max-width:680px}
+.search{width:100%;padding:13px 16px;border:1px solid var(--border);border-radius:10px;font-size:15px;margin-bottom:8px;font-family:inherit;background:var(--surface)}
+.search:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,109,221,0.12)}
+.hint{font-size:12px;color:var(--muted);margin-bottom:28px}
+.cat{font-size:1.15rem;font-weight:800;color:#0F172A;margin:34px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:8px}
+details{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
+details[open]{box-shadow:0 2px 14px rgba(0,0,0,0.05)}
+summary{padding:15px 18px;font-weight:600;font-size:14.5px;color:#0F172A;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:'+';color:var(--accent);font-size:20px;font-weight:700;flex-shrink:0}
+details[open] summary::after{content:'\2212'}
+summary:hover{background:#F8FAFC}
+.ans{padding:0 18px 18px;font-size:14px;color:#334155}
+.ans p{margin-bottom:12px}.ans p:last-child{margin-bottom:0}
+.ans ul{margin:0 0 12px 18px}.ans li{margin-bottom:5px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12.5px}
+pre{background:#21252B;color:#E2E8F0;border-radius:8px;padding:14px 16px;overflow-x:auto;font-family:'JetBrains Mono','Fira Code',monospace;font-size:12.5px;line-height:1.65;margin:0 0 12px}
+.tag{display:inline-block;background:var(--accent-light);color:#0369A1;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600;margin-left:6px}
+.ans a{color:var(--accent);font-weight:600}.ans a:hover{text-decoration:underline}
+.no-results{display:none;text-align:center;color:var(--muted);padding:40px;font-size:15px}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 18px}}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">🦜 LangChain Course</div>
+    <div class="sidebar-title">Byte-Sized Lessons</div>
+  </div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="faq.html" class="sidebar-home active">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">❓ Beginner FAQ · LangChain v1 · verified June 2026</div>
+  <h1>Frequently Asked Questions</h1>
+  <p class="lead">The questions newcomers hit most often when starting with LangChain (Python) — install errors, the v0→v1 import confusion, why tools aren't being called, memory, and more. Answers are verified against the live docs.</p>
+
+  <input type="text" class="search" id="faqSearch" placeholder="🔍 Search the FAQ (e.g. 'api key', 'tool not called', 'thread_id')…" aria-label="Search FAQ">
+  <p class="hint">Click any question to expand. Type above to filter.</p>
+
+  <div id="faqList">
+
+  <div class="cat">⚙️ Setup &amp; Installation</div>
+
+  <details><summary>What exactly do I need to install?</summary>
+    <div class="ans"><p>Two things: the core package and at least one <strong>provider</strong> package for the model you want.</p>
+    <pre>pip install -U langchain langchain-openai python-dotenv</pre>
+    <p><code class="inline">langchain</code> gives you <code class="inline">create_agent</code>, tools, and middleware. <code class="inline">langchain-openai</code> connects to OpenAI. Prefer Claude? <code class="inline">pip install langchain-anthropic</code>. Gemini? <code class="inline">langchain-google-genai</code>. See <a href="02-first-agent.html">Module 02</a>.</p></div>
+  </details>
+
+  <details><summary>I get <code class="inline">ModuleNotFoundError: No module named 'langchain_openai'</code></summary>
+    <div class="ans"><p>The core <code class="inline">langchain</code> package doesn't bundle providers. Install the provider package separately: <code class="inline">pip install langchain-openai</code> (note: the <em>import</em> name uses an underscore, <code class="inline">langchain_openai</code>, but the <em>pip</em> name uses a hyphen, <code class="inline">langchain-openai</code>).</p>
+    <p>Also confirm you installed into the same environment your script runs in — activate your venv first: <code class="inline">source .venv/bin/activate</code>.</p></div>
+  </details>
+
+  <details><summary>How do I set my API key safely?</summary>
+    <div class="ans"><p>Never hardcode it. Use an environment variable or a <code class="inline">.env</code> file:</p>
+    <pre>OPENAI_API_KEY=sk-proj-...
+# optional but recommended
+LANGSMITH_TRACING=true
+LANGSMITH_API_KEY=lsv2_pt_...</pre>
+    <p>Then load it at the top of your script with <code class="inline">from dotenv import load_dotenv; load_dotenv()</code>. LangChain reads the provider key automatically from the environment.</p></div>
+  </details>
+
+  <details><summary>Which Python version do I need?</summary>
+    <div class="ans"><p>Python 3.10+ is recommended for LangChain v1 (3.9 may work for parts but newer typing features are used widely). Always work inside a virtual environment so dependencies stay isolated.</p></div>
+  </details>
+
+  <div class="cat">📦 Imports &amp; the v0 → v1 confusion</div>
+
+  <details><summary>Where does <code class="inline">create_agent</code> come from? Old tutorials use different imports</summary>
+    <div class="ans"><p>In LangChain <strong>v1</strong> the canonical import is:</p>
+    <pre>from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model</pre>
+    <p>Older (v0) tutorials use <code class="inline">from langgraph.prebuilt import create_react_agent</code> — that's the <em>predecessor</em>. <code class="inline">create_agent</code> replaced <code class="inline">create_react_agent</code>. If a tutorial imports <code class="inline">create_react_agent</code>, it's pre-v1.</p></div>
+  </details>
+
+  <details><summary><code class="inline">langchain</code> vs <code class="inline">langchain_core</code> vs <code class="inline">langchain.agents</code> — which do I use?</summary>
+    <div class="ans"><p>Rule of thumb for v1:</p>
+    <ul>
+      <li><code class="inline">langchain.agents</code> → <code class="inline">create_agent</code>, <code class="inline">AgentState</code></li>
+      <li><code class="inline">langchain.chat_models</code> → <code class="inline">init_chat_model</code></li>
+      <li><code class="inline">langchain.tools</code> → <code class="inline">tool</code>, <code class="inline">ToolRuntime</code></li>
+      <li><code class="inline">langchain.agents.middleware</code> → all middleware classes <em>and</em> decorators (<code class="inline">before_model</code>, <code class="inline">wrap_tool_call</code>, …)</li>
+      <li><code class="inline">langchain.agents.structured_output</code> → <code class="inline">ToolStrategy</code>, <code class="inline">ProviderStrategy</code></li>
+      <li><code class="inline">langgraph.types</code> → <code class="inline">Command</code>, <code class="inline">interrupt</code></li>
+    </ul>
+    <p><code class="inline">langchain_core</code> is the low-level foundation. <code class="inline">langchain.messages</code> and <code class="inline">langchain_core.messages</code> both work for <code class="inline">HumanMessage</code>/<code class="inline">AIMessage</code> etc.; the docs prefer <code class="inline">langchain.messages</code>.</p></div>
+  </details>
+
+  <details><summary>Where do middleware decorators import from?</summary>
+    <div class="ans"><p>Everything middleware-related — classes and decorators — lives in one place in v1:</p>
+    <pre>from langchain.agents.middleware import (
+    AgentMiddleware, before_model, after_model,
+    wrap_model_call, wrap_tool_call, dynamic_prompt,
+    SummarizationMiddleware, HumanInTheLoopMiddleware,
+)</pre>
+    <p>Older paths like <code class="inline">langchain.middleware</code> or <code class="inline">...middleware.decorators</code> are not the v1 path. See <a href="13-middleware-overview.html">Module 13</a>.</p></div>
+  </details>
+
+  <details><summary>I followed an old tutorial and nothing works — what changed in v1?</summary>
+    <div class="ans"><p>Common v0 → v1 shifts: <code class="inline">create_react_agent</code> → <code class="inline">create_agent</code>; chains (<code class="inline">LLMChain</code>, <code class="inline">RetrievalQA</code>) are replaced by composing agents + tools + middleware; HITL moved to <code class="inline">HumanInTheLoopMiddleware</code> + the <code class="inline">interrupt()</code> primitive (no more raising <code class="inline">NodeInterrupt</code>). When in doubt, check the <a href="https://docs.langchain.com/oss/python/releases/changelog" target="_blank">changelog / migration guide</a> and prefer code that matches the current <a href="https://docs.langchain.com/oss/python/langchain/quickstart" target="_blank">quickstart</a>.</p></div>
+  </details>
+
+  <div class="cat">🧠 Models</div>
+
+  <details><summary>What is a "model string" like <code class="inline">openai:gpt-4o-mini</code>?</summary>
+    <div class="ans"><p>It's a <code class="inline">"provider:model-name"</code> identifier that <code class="inline">init_chat_model</code> (and <code class="inline">create_agent</code>) understands. The provider prefix tells LangChain which integration to use. Examples: <code class="inline">openai:gpt-4o-mini</code>, <code class="inline">anthropic:claude-sonnet-4-6</code>, <code class="inline">google_genai:gemini-2.5-flash-lite</code>.</p>
+    <p><strong>Gotcha:</strong> dropping the provider prefix (just <code class="inline">"gpt-4o"</code>) can fail — keep the prefix. See <a href="03-chat-models.html">Module 03</a>.</p></div>
+  </details>
+
+  <details><summary><code class="inline">init_chat_model()</code> vs <code class="inline">ChatOpenAI()</code> — which should I use?</summary>
+    <div class="ans"><p><code class="inline">init_chat_model("openai:gpt-4o-mini")</code> is the portable, provider-agnostic way — swap providers by changing one string. <code class="inline">ChatOpenAI(model="gpt-4o-mini")</code> is the direct class, useful when you need OpenAI-specific options. For most agents, prefer <code class="inline">init_chat_model</code>.</p></div>
+  </details>
+
+  <details><summary>I get an <code class="inline">AuthenticationError</code> / 401</summary>
+    <div class="ans"><p>The provider key is missing or wrong. Check: (1) the env var name matches the provider (<code class="inline">OPENAI_API_KEY</code>, <code class="inline">ANTHROPIC_API_KEY</code>, …), (2) <code class="inline">load_dotenv()</code> runs <em>before</em> you create the model, (3) the key has no trailing spaces/quotes, (4) your account has billing/credits enabled.</p></div>
+  </details>
+
+  <details><summary>Do I have to use OpenAI?</summary>
+    <div class="ans"><p>No. LangChain's value is a standard interface across providers. Install the matching package and change the model string — Anthropic, Google, AWS Bedrock, Azure, Ollama (local), and many more are supported. Your agent code stays the same.</p></div>
+  </details>
+
+  <details><summary>What does <code class="inline">temperature</code> do?</summary>
+    <div class="ans"><p>It controls randomness. <code class="inline">temperature=0</code> makes output (near-)deterministic — best for tool-using agents and structured output where you want consistency. Higher values (0.7–1.0) add creativity, useful for brainstorming or varied prose.</p></div>
+  </details>
+
+  <div class="cat">🔧 Tools</div>
+
+  <details><summary>Why isn't my tool being called?</summary>
+    <div class="ans"><p>The model decides whether to call a tool based on its <strong>name</strong>, <strong>docstring</strong>, and <strong>type hints</strong>. The usual culprits:</p>
+    <ul>
+      <li><strong>Missing type hints</strong> — they generate the schema; without them the model can't call the tool correctly.</li>
+      <li><strong>Weak docstring</strong> — the docstring is the description the model reads. Be specific: say <em>when</em> to use it.</li>
+      <li><strong>Vague name</strong> — use clear <code class="inline">snake_case</code> verbs like <code class="inline">search_database</code>.</li>
+    </ul>
+    <pre>from langchain.tools import tool
+
+@tool
+def get_weather(city: str) -> str:
+    """Get the current weather for a city. Use for any weather question."""
+    return f"Sunny in {city}"</pre>
+    <p>See <a href="05-tools-creating.html">Module 05</a>.</p></div>
+  </details>
+
+  <details><summary>How does a tool read conversation state or user info?</summary>
+    <div class="ans"><p>Add a <code class="inline">runtime: ToolRuntime</code> parameter — it's injected automatically and hidden from the model. Through it you get <code class="inline">runtime.state</code> (short-term memory), <code class="inline">runtime.context</code> (immutable per-invocation data like a user ID), and <code class="inline">runtime.store</code> (long-term memory).</p>
+    <pre>from langchain.tools import tool, ToolRuntime
+
+@tool
+def whoami(runtime: ToolRuntime) -> str:
+    """Return the current user id."""
+    return runtime.context.user_id</pre>
+    <p><strong>Gotcha:</strong> <code class="inline">config</code> and <code class="inline">runtime</code> are reserved argument names. See <a href="06-tools-advanced.html">Module 06</a>.</p></div>
+  </details>
+
+  <div class="cat">🤖 Agents &amp; the loop</div>
+
+  <details><summary>What is the "agent loop" / ReAct loop?</summary>
+    <div class="ans"><p>The cycle the agent runs: <strong>reason</strong> (model decides what to do) → <strong>act</strong> (call a tool) → <strong>observe</strong> (tool result is added to messages) → reason again. It repeats until the model answers with no further tool calls. See the interactive diagram in <a href="02-first-agent.html">Module 02</a> and depth in <a href="07-agents-deep-dive.html">Module 07</a>.</p></div>
+  </details>
+
+  <details><summary><code class="inline">create_agent</code> vs LangGraph vs Deep Agents — when to use which?</summary>
+    <div class="ans"><ul>
+      <li><strong>Deep Agents</strong> — batteries-included (planning, virtual filesystem, subagents). Start here for maximum capability with minimal setup.</li>
+      <li><strong>LangChain <code class="inline">create_agent</code></strong> — a minimal, highly customizable harness. Use when you want fine-grained control over model, tools, and middleware. <em>This course teaches this.</em></li>
+      <li><strong>LangGraph</strong> — the low-level orchestration framework underneath, for mixing deterministic and agentic steps. Reach for it when a plain loop isn't enough.</li>
+    </ul></div>
+  </details>
+
+  <details><summary>How do I read the agent's answer?</summary>
+    <div class="ans"><p>The final reply is the last message:</p>
+    <pre>result = agent.invoke({"messages": [{"role": "user", "content": "Hi"}]})
+print(result["messages"][-1].content)</pre>
+    <p>The v1 docs also show <code class="inline">.content_blocks</code>, which returns content as a structured list (text, tool calls, reasoning, images) — useful for multimodal/reasoning models. For plain text, <code class="inline">.content</code> is fine.</p></div>
+  </details>
+
+  <details><summary>My agent loops forever / burns tokens — how do I cap it?</summary>
+    <div class="ans"><p>Set a <code class="inline">recursion_limit</code> so a misbehaving agent can't loop indefinitely, and add a model-call-limit or token-budget middleware as a cost safety net. Set the limit based on your most complex legitimate task, not higher. See <a href="14-prebuilt-middleware.html">Module 14</a>.</p></div>
+  </details>
+
+  <div class="cat">💾 Memory &amp; state</div>
+
+  <details><summary>Why does my agent forget everything between turns?</summary>
+    <div class="ans"><p>By default each <code class="inline">invoke</code> is stateless. To remember, give the agent a <strong>checkpointer</strong> and pass a <strong>thread_id</strong>:</p>
+    <pre>from langgraph.checkpoint.memory import InMemorySaver
+agent = create_agent(model, tools, checkpointer=InMemorySaver())
+
+cfg = {"configurable": {"thread_id": "user-42"}}
+agent.invoke({"messages": [...]}, config=cfg)  # same thread_id remembers</pre>
+    <p>See <a href="09-short-term-memory.html">Module 09</a>.</p></div>
+  </details>
+
+  <details><summary>What is a <code class="inline">thread_id</code>?</summary>
+    <div class="ans"><p>It's the conversation key. All turns sharing a <code class="inline">thread_id</code> share message history via the checkpointer. Use one per user/conversation. It's also how a paused (human-in-the-loop) run is found and resumed later.</p></div>
+  </details>
+
+  <details><summary><code class="inline">InMemorySaver</code> vs a real database?</summary>
+    <div class="ans"><p><code class="inline">InMemorySaver</code> is perfect for prototyping but loses everything on restart. For production (and any human-in-the-loop flow where a human may take minutes/hours), use a persistent checkpointer like <code class="inline">AsyncSqliteSaver</code> (dev) or <code class="inline">AsyncPostgresSaver</code> (prod). See <a href="12-long-term-memory.html">Module 12</a>.</p></div>
+  </details>
+
+  <div class="cat">⚡ Streaming &amp; async</div>
+
+  <details><summary><code class="inline">invoke</code> vs <code class="inline">ainvoke</code> vs <code class="inline">stream</code> — what's the difference?</summary>
+    <div class="ans"><ul>
+      <li><code class="inline">invoke</code> — run once, get the full result (blocking).</li>
+      <li><code class="inline">ainvoke</code> — same, but <code class="inline">async</code> (use inside async apps like FastAPI).</li>
+      <li><code class="inline">stream</code> / <code class="inline">astream</code> — yield partial output as it's produced (tokens, state updates) for a live UI.</li>
+    </ul><p>See <a href="10-streaming.html">Module 10</a> and <a href="11-event-streaming.html">Module 11</a>.</p></div>
+  </details>
+
+  <details><summary>What are stream modes (<code class="inline">values</code> / <code class="inline">updates</code> / <code class="inline">messages</code>)?</summary>
+    <div class="ans"><p><code class="inline">values</code> = full state after each step; <code class="inline">updates</code> = just what changed; <code class="inline">messages</code> = token-by-token LLM output (for typing-effect UIs). You can combine them, e.g. <code class="inline">stream_mode=["updates", "messages"]</code>. See <a href="10-streaming.html">Module 10</a>.</p></div>
+  </details>
+
+  <div class="cat">📚 RAG</div>
+
+  <details><summary>When do I need RAG instead of just a tool?</summary>
+    <div class="ans"><p>Use RAG when answers must be grounded in <em>your</em> documents/knowledge that the model wasn't trained on. You embed and index your content, then retrieve the most relevant chunks at query time and feed them to the model. If the data is reachable by a simple API call, a plain tool may be enough. See <a href="22-rag-fundamentals.html">Module 22</a>.</p></div>
+  </details>
+
+  <details><summary>What are embeddings and a vector store, in one line each?</summary>
+    <div class="ans"><p><strong>Embeddings</strong> turn text into numeric vectors capturing meaning. A <strong>vector store</strong> indexes those vectors so you can find the chunks most similar to a question. The <strong>retriever</strong> is the query interface over the store. See <a href="22-rag-fundamentals.html">Module 22</a>.</p></div>
+  </details>
+
+  <div class="cat">🔍 Debugging &amp; production</div>
+
+  <details><summary>How do I see what my agent is actually doing?</summary>
+    <div class="ans"><p>Enable LangSmith tracing — set <code class="inline">LANGSMITH_TRACING=true</code> and <code class="inline">LANGSMITH_API_KEY</code> in your environment. No code changes needed; every run is logged with the full message chain, tool calls, arguments, latency, and tokens. Free tier at <a href="https://smith.langchain.com" target="_blank">smith.langchain.com</a>. See <a href="29-langsmith-studio.html">Module 29</a>.</p>
+    <p>For quick local inspection, print the whole history: <code class="inline">for m in result["messages"]: print(type(m).__name__, m.content)</code>.</p></div>
+  </details>
+
+  <details><summary>How do I keep costs under control?</summary>
+    <div class="ans"><p>Use a cheaper model for simple steps (and a stronger one only when needed via dynamic model selection middleware), cap iterations with <code class="inline">recursion_limit</code>, trim/summarize long histories (<code class="inline">SummarizationMiddleware</code>), enable prompt caching for large static prompts, and watch token usage in LangSmith. See <a href="16-context-engineering.html">Module 16</a> and <a href="32-deployment-observability.html">Module 32</a>.</p></div>
+  </details>
+
+  <div class="cat">🗺️ Learning path</div>
+
+  <details><summary>I'm brand new — where do I start and in what order?</summary>
+    <div class="ans"><p>Go in order: <a href="01-what-is-langchain.html">01 (What is LangChain)</a> → <a href="02-first-agent.html">02 (build a working agent)</a> → the Core Components (03–08) → then memory, middleware, and the advanced parts. The course deliberately teaches <em>components before customization</em> and <em>working code before theory</em>. Do the quiz after each module to lock it in.</p></div>
+  </details>
+
+  <details><summary>Do I need to know LangGraph first?</summary>
+    <div class="ans"><p>No. <code class="inline">create_agent</code> is built on LangGraph but you don't need LangGraph knowledge to start. Pick it up later (it's referenced in Modules 07, 19, 20) when you need custom orchestration beyond the standard agent loop.</p></div>
+  </details>
+
+  </div>
+
+  <div class="no-results" id="noResults">No questions match your search. Try a different term, or browse the modules in the sidebar.</div>
+
+</div>
+</main>
+
+<script>
+const search = document.getElementById('faqSearch');
+const items = Array.from(document.querySelectorAll('#faqList details'));
+const cats = Array.from(document.querySelectorAll('#faqList .cat'));
+const noResults = document.getElementById('noResults');
+search.addEventListener('input', () => {
+  const q = search.value.trim().toLowerCase();
+  let any = false;
+  items.forEach(d => {
+    const match = d.textContent.toLowerCase().includes(q);
+    d.style.display = match ? '' : 'none';
+    if (match) { any = true; if (q) d.open = true; if (!q) d.open = false; }
+  });
+  // hide a category header if none of its following details are visible
+  cats.forEach(cat => {
+    let sib = cat.nextElementSibling, show = false;
+    while (sib && !sib.classList.contains('cat')) {
+      if (sib.tagName === 'DETAILS' && sib.style.display !== 'none') show = true;
+      sib = sib.nextElementSibling;
+    }
+    cat.style.display = show ? '' : 'none';
+  });
+  noResults.style.display = any ? 'none' : 'block';
+});
+</script>
+</body>
+</html>

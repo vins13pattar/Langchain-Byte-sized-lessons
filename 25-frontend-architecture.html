@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 25: Frontend Architecture — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F0F4F8;--surface:#FFF;--sidebar-bg:#0F172A;--sidebar-w:272px;--accent:#006DDD;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--green:#16A34A;--orange:#EA580C;--purple:#7C3AED;--indigo:#4F46E5}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:#E0E7FF;color:#3730A3;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#E0E7FF,#C7D2FE);border:1px solid #A5B4FC;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#3730A3;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#EFF6FF;border-left:4px solid var(--accent)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+
+/* arch layers */
+.arch-layers{margin:24px 0;display:flex;flex-direction:column;gap:6px}
+.arch-layer{padding:12px 20px;border-radius:8px;display:flex;align-items:center;gap:12px}
+.arch-layer.browser{background:#DBEAFE;border:1px solid #93C5FD}
+.arch-layer.api{background:#EDE9FE;border:1px solid #C4B5FD}
+.arch-layer.agent{background:#DCFCE7;border:1px solid #86EFAC}
+.arch-layer.infra{background:#FEF3C7;border:1px solid #FCD34D}
+.layer-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;min-width:70px}
+.browser .layer-label{color:#1E40AF}
+.api .layer-label{color:#5B21B6}
+.agent .layer-label{color:#166534}
+.infra .layer-label{color:#92400E}
+.layer-items{display:flex;gap:8px;flex-wrap:wrap}
+.layer-item{background:rgba(255,255,255,0.7);border-radius:5px;padding:3px 10px;font-size:12px;font-weight:500;color:#334155}
+
+/* options compare */
+.opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0}
+.opt-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.opt-card h4{font-size:13px;font-weight:700;margin-bottom:6px}
+.opt-card p{font-size:12.5px;color:var(--muted);margin:0}
+
+.use-case{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #BAE6FD}
+.use-case h4{color:#1E40AF;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn.next{justify-content:flex-end;text-align:right}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="sidebar-brand">🦜 LangChain Course</div><div class="sidebar-title">Byte-Sized Lessons</div></div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="25-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 25 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link active"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 7 · Module 25 · Frontend</div>
+  <h1>Frontend Architecture for LangChain Agents</h1>
+  <div class="mod-meta">
+    <span>⏱ ~20 min</span><span>💻 Runnable code</span><span>🏗️ System design</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll learn:</strong> How to structure the full stack for an agent-powered application — the API layer between your agent and your frontend, session management, the FastAPI + SSE pattern for streaming, and which framework choices fit which use cases.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px 22px;margin:28px 0">
+    <div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">📐 Structural overview — Frontend architecture (useStream)</div>
+    <img src="diagrams/25-frontend-architecture.svg" alt="Frontend architecture (useStream) diagram" loading="lazy" style="width:100%;height:auto;display:block;border:1px solid #F1F5F9;border-radius:8px;background:#fff">
+    <p style="font-size:12.5px;color:#64748B;margin:12px 0 0">
+      <a href="diagrams/25-frontend-architecture.svg" target="_blank" style="color:#006DDD;font-weight:600;text-decoration:none">↗ Open full size</a>
+      &nbsp;&middot;&nbsp;
+      <a href="diagrams/25-frontend-architecture.excalidraw" download style="color:#006DDD;font-weight:600;text-decoration:none">⬇ Edit in Excalidraw</a>
+      &nbsp;— labels use real LangChain classes.
+    </p>
+  </div>
+
+
+  <div class="callout analogy">
+    <div class="callout-icon">📡</div>
+    <div class="callout-content">
+      <strong>Analogy: the restaurant kitchen</strong>
+      <p>Diners (browser) don't walk into the kitchen (agent) — they interact with waitstaff (API layer). The waiter takes orders, relays them to the kitchen, and brings back food as it's ready. The kitchen doesn't need to know about the dining room layout, and the dining room doesn't need to know about recipe complexity. The API layer is your waiter: it mediates, authenticates, formats, and streams.</p>
+    </div>
+  </div>
+
+  <h2>The Four-Layer Stack</h2>
+
+  <div class="arch-layers">
+    <div class="arch-layer browser">
+      <span class="layer-label">Browser</span>
+      <div class="layer-items">
+        <span class="layer-item">React / Next.js</span>
+        <span class="layer-item">SSE reader</span>
+        <span class="layer-item">Chat state</span>
+        <span class="layer-item">Message renderer</span>
+        <span class="layer-item">Tool call UI</span>
+      </div>
+    </div>
+    <div class="arch-layer api">
+      <span class="layer-label">API Layer</span>
+      <div class="layer-items">
+        <span class="layer-item">FastAPI / Next.js API routes</span>
+        <span class="layer-item">Auth (JWT)</span>
+        <span class="layer-item">Session routing</span>
+        <span class="layer-item">SSE streaming endpoint</span>
+        <span class="layer-item">Context injection</span>
+      </div>
+    </div>
+    <div class="arch-layer agent">
+      <span class="layer-label">Agent</span>
+      <div class="layer-items">
+        <span class="layer-item">create_agent()</span>
+        <span class="layer-item">Tools</span>
+        <span class="layer-item">Middleware stack</span>
+        <span class="layer-item">Checkpointer</span>
+        <span class="layer-item">Store</span>
+      </div>
+    </div>
+    <div class="arch-layer infra">
+      <span class="layer-label">Infra</span>
+      <div class="layer-items">
+        <span class="layer-item">PostgreSQL (state)</span>
+        <span class="layer-item">Redis (sessions)</span>
+        <span class="layer-item">Vector DB (RAG)</span>
+        <span class="layer-item">Object storage (files)</span>
+      </div>
+    </div>
+  </div>
+
+  <h2>FastAPI Streaming Backend</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">backend/main.py</span></div>
+    <pre><code class="language-python">from fastapi import FastAPI, Request, HTTPException, Depends
+from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+from langchain_core.messages import HumanMessage, AIMessageChunk
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+import json, asyncio
+
+app = FastAPI()
+app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:3000"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+
+# ── Single agent instance (shared across all requests) ─────────────────────────
+agent = create_agent(
+    model=init_chat_model("openai:gpt-4o-mini"),
+    tools=[...],
+    checkpointer=AsyncPostgresSaver.from_conn_string(DATABASE_URL),
+)
+
+# ── Request/response models ────────────────────────────────────────────────────
+class ChatRequest(BaseModel):
+    message: str
+    thread_id: str
+
+# ── Auth dependency ────────────────────────────────────────────────────────────
+async def get_current_user(request: Request) -> dict:
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    if not token:
+        raise HTTPException(status_code=401)
+    return verify_jwt(token)  # returns {"user_id": ..., "tenant_id": ...}
+
+# ── Streaming chat endpoint ───────────────────────────────────────────────────
+@app.post("/api/chat/stream")
+async def chat_stream(
+    req: ChatRequest,
+    user: dict = Depends(get_current_user)
+):
+    """Stream agent response tokens as Server-Sent Events."""
+
+    async def event_generator():
+        config = {
+            "configurable": {
+                "thread_id": req.thread_id,
+                "context": {
+                    "user_id": user["user_id"],
+                    "tenant_id": user["tenant_id"],
+                }
+            }
+        }
+
+        try:
+            async for event in agent.astream_events(
+                {"messages": [HumanMessage(req.message)]},
+                config=config,
+                version="v2",
+            ):
+                event_type = event["event"]
+
+                # Stream text tokens as they arrive
+                if event_type == "on_chat_model_stream":
+                    chunk = event["data"]["chunk"]
+                    if chunk.content:
+                        yield f"data: {json.dumps({'type': 'token', 'content': chunk.content})}\n\n"
+
+                # Notify frontend when a tool is called
+                elif event_type == "on_tool_start":
+                    yield f"data: {json.dumps({'type': 'tool_start', 'name': event['name'], 'input': event['data'].get('input', {})})}\n\n"
+
+                # Notify frontend when a tool finishes
+                elif event_type == "on_tool_end":
+                    yield f"data: {json.dumps({'type': 'tool_end', 'name': event['name']})}\n\n"
+
+            # Signal completion
+            yield f"data: {json.dumps({'type': 'done'})}\n\n"
+
+        except Exception as e:
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",  # Critical: disable nginx buffering
+        }
+    )
+
+# ── Non-streaming endpoint for simple queries ──────────────────────────────────
+@app.post("/api/chat")
+async def chat(req: ChatRequest, user: dict = Depends(get_current_user)):
+    config = {"configurable": {"thread_id": req.thread_id}}
+    result = await agent.ainvoke(
+        {"messages": [HumanMessage(req.message)]},
+        config=config,
+    )
+    return {"response": result["messages"][-1].content}
+
+# ── Session management ────────────────────────────────────────────────────────
+@app.get("/api/sessions/{thread_id}/history")
+async def get_history(thread_id: str, user: dict = Depends(get_current_user)):
+    config = {"configurable": {"thread_id": thread_id}}
+    state = await agent.aget_state(config)
+    messages = [
+        {"role": "human" if m.__class__.__name__ == "HumanMessage" else "assistant",
+         "content": m.content}
+        for m in state.values.get("messages", [])
+        if hasattr(m, "content") and m.content
+    ]
+    return {"messages": messages}</code></pre>
+  </div>
+
+  <h2>Frontend Framework Choices</h2>
+
+  <div class="opt-grid">
+    <div class="opt-card">
+      <h4>⚡ Next.js + App Router</h4>
+      <p>Best overall choice. API routes live alongside React components. Server components handle auth. Built-in streaming support. Deploy to Vercel in one command. Use for most production agent UIs.</p>
+    </div>
+    <div class="opt-card">
+      <h4>⚛️ React + Vite (SPA)</h4>
+      <p>Simpler setup if you already have a FastAPI backend. No SSR complexity. Good for internal tools or dashboards where SEO doesn't matter. Frontend and backend are separate deployments.</p>
+    </div>
+    <div class="opt-card">
+      <h4>🤖 Agent Chat UI (pre-built)</h4>
+      <p>LangChain's <code>agent-chat-ui</code> open-source starter. Streaming, markdown, tool calls already handled. Fork and customize rather than building from scratch. Covered in Module 31.</p>
+    </div>
+    <div class="opt-card">
+      <h4>🐍 Streamlit / Gradio</h4>
+      <p>Pure Python UI — zero JavaScript. Great for prototypes, internal tools, data science demos. Not suitable for production consumer apps. Limited streaming support.</p>
+    </div>
+  </div>
+
+  <h2>Next.js API Route (TypeScript)</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">typescript</span><span class="code-filename">app/api/chat/route.ts</span></div>
+    <pre><code class="language-typescript">import { NextRequest } from 'next/server'
+
+// Next.js App Router API route — handles SSE streaming
+export async function POST(req: NextRequest) {
+  const { message, threadId } = await req.json()
+
+  // Get auth from session/cookie
+  const session = await getServerSession()
+  if (!session) return new Response('Unauthorized', { status: 401 })
+
+  // Create a ReadableStream that proxies the Python backend's SSE
+  const stream = new ReadableStream({
+    async start(controller) {
+      const encoder = new TextEncoder()
+
+      // Call Python FastAPI backend
+      const backendRes = await fetch('http://localhost:8000/api/chat/stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.accessToken}`,
+        },
+        body: JSON.stringify({ message, thread_id: threadId }),
+      })
+
+      const reader = backendRes.body!.getReader()
+      const decoder = new TextDecoder()
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        controller.enqueue(encoder.encode(decoder.decode(value)))
+      }
+
+      controller.close()
+    }
+  })
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  })
+}</code></pre>
+  </div>
+
+  <h2>Session Management Pattern</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">typescript</span><span class="code-filename">lib/sessions.ts</span></div>
+    <pre><code class="language-typescript">import { nanoid } from 'nanoid'
+
+// Each browser tab gets its own thread_id — persisted in localStorage
+// Multiple tabs → multiple independent conversations
+export function getOrCreateThreadId(sessionKey: string = 'default'): string {
+  const storageKey = `langchain_thread_${sessionKey}`
+  let threadId = localStorage.getItem(storageKey)
+
+  if (!threadId) {
+    threadId = `${Date.now()}-${nanoid(8)}`
+    localStorage.setItem(storageKey, threadId)
+  }
+
+  return threadId
+}
+
+export function resetThread(sessionKey: string = 'default'): string {
+  const storageKey = `langchain_thread_${sessionKey}`
+  const newThreadId = `${Date.now()}-${nanoid(8)}`
+  localStorage.setItem(storageKey, newThreadId)
+  return newThreadId
+}
+
+// In React
+// const threadId = useMemo(() => getOrCreateThreadId(), [])
+// const handleNewChat = () => setThreadId(resetThread())</code></pre>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: never run the agent directly in the browser</strong>
+      <p>Your LLM API key must never reach the client — browsers are public. Always proxy through your backend. The browser calls your API, your API authenticates the user, injects the context, and calls the agent. This also lets you add rate limiting, audit logging, and guardrails at the API layer without changing the agent or the frontend.</p>
+    </div>
+  </div>
+
+  <div class="use-case">
+    <h4>🛍️ E-commerce AI Assistant</h4>
+    <p>Architecture: Next.js frontend → Next.js API routes (auth, rate limiting) → Python FastAPI (agent orchestration, streaming) → LangChain agent (product search, cart tools, order lookup) → PostgreSQL (conversation history) + Pinecone (product catalog RAG). The API layer injects the customer's <code>customer_id</code> and <code>cart_session_id</code> as context — tools use these to scope every database query. The browser never sees the API key or the customer's full order history — only what the agent surfaces.</p>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>Key Takeaways</strong>
+      <p>Never expose the agent directly to the browser. Always add an API layer for auth, context injection, and rate limiting. Use FastAPI with <code class="inline">StreamingResponse</code> and SSE for streaming. Use Next.js API routes to proxy SSE to the browser. Thread IDs (stored client-side) are how each conversation is scoped to a checkpointer. For production: FastAPI (Python) handles the agent; Next.js handles the UI and auth.</p>
+    </div>
+  </div>
+
+  <div class="mod-nav">
+    <a href="24-agentic-rag.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 24: Agentic RAG</strong></div>
+    </a>
+    <a href="26-rendering-patterns.html" class="nav-btn next">
+      <div><small>Next up</small><strong>Module 26: Rendering Patterns →</strong></div>
+      <span style="font-size:20px">➡</span>
+    </a>
+  </div>
+
+</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

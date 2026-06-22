@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 29: LangSmith Studio — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F0F4F8;--surface:#FFF;--sidebar-bg:#0F172A;--sidebar-w:272px;--accent:#006DDD;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--green:#16A34A;--orange:#EA580C;--purple:#7C3AED;--smith:#10B981}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:#D1FAE5;color:#065F46;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#D1FAE5,#A7F3D0);border:1px solid #6EE7B7;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#064E3B;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#ECFDF5;border-left:4px solid var(--smith)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+.use-case{background:linear-gradient(135deg,#ECFDF5,#F0FDF4);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #6EE7B7}
+.use-case h4{color:#065F46;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+.feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0}
+.feature-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+.feature-card h4{font-size:14px;font-weight:700;color:#0F172A;margin-bottom:6px}
+.feature-card p{margin:0;font-size:13px;color:#64748B}
+@media(max-width:600px){.feature-grid{grid-template-columns:1fr}}
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn.next{justify-content:flex-end;text-align:right}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="sidebar-brand">🦜 LangChain Course</div><div class="sidebar-title">Byte-Sized Lessons</div></div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="29-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 29 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link active"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 8 · Module 29 · Build &amp; Ship</div>
+  <h1>LangSmith Studio — Tracing, Evaluation &amp; Debugging</h1>
+  <div class="mod-meta">
+    <span>⏱ ~18 min</span><span>💻 Runnable code</span><span>🔍 Observability</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll learn:</strong> How to set up LangSmith tracing in one line, read trace trees to debug unexpected agent behavior, create evaluation datasets, run automated evals to catch regressions, and use the playground to iterate on prompts without touching code.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px 22px;margin:28px 0">
+    <div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">📐 Structural overview — LangSmith observability</div>
+    <img src="diagrams/29-langsmith-studio.svg" alt="LangSmith observability diagram" loading="lazy" style="width:100%;height:auto;display:block;border:1px solid #F1F5F9;border-radius:8px;background:#fff">
+    <p style="font-size:12.5px;color:#64748B;margin:12px 0 0">
+      <a href="diagrams/29-langsmith-studio.svg" target="_blank" style="color:#006DDD;font-weight:600;text-decoration:none">↗ Open full size</a>
+      &nbsp;&middot;&nbsp;
+      <a href="diagrams/29-langsmith-studio.excalidraw" download style="color:#006DDD;font-weight:600;text-decoration:none">⬇ Edit in Excalidraw</a>
+      &nbsp;— labels use real LangChain classes.
+    </p>
+  </div>
+
+
+  <div class="callout analogy">
+    <div class="callout-icon">🔬</div>
+    <div class="callout-content">
+      <strong>Analogy: a flight data recorder for your agents</strong>
+      <p>Aircraft black boxes record every sensor reading, control input, and system event so investigators can reconstruct exactly what happened. LangSmith is the black box for your agents: every LLM call, tool invocation, token count, latency, and error is captured in a searchable trace. When your agent does something unexpected in production, you don't guess — you open the trace and see exactly where it went wrong.</p>
+    </div>
+  </div>
+
+  <h2>Setting Up Tracing</h2>
+
+  <p>LangSmith tracing is enabled entirely through environment variables — no code changes needed in your agent. All LangChain calls are automatically instrumented once these are set.</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">bash</span><span class="code-filename">.env</span></div>
+    <pre><code class="language-bash"># 1. Get your API key at: https://smith.langchain.com → Settings → API Keys
+LANGCHAIN_API_KEY=ls__your_key_here
+
+# 2. Enable tracing
+LANGCHAIN_TRACING_V2=true
+
+# 3. Name the project (groups traces in LangSmith UI)
+LANGCHAIN_PROJECT=my-agent-app</code></pre>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">agent.py — no changes needed!</span></div>
+    <pre><code class="language-python">import os
+from dotenv import load_dotenv
+
+load_dotenv()  # picks up LANGCHAIN_* env vars above
+
+from langchain_anthropic import ChatAnthropic
+from langchain.agents import create_agent
+
+# This code is unchanged — tracing happens automatically
+model = ChatAnthropic(model="claude-opus-4-5")
+agent = create_agent(model=model, tools=[...])
+
+# Every invoke/stream call is now traced to LangSmith
+response = agent.invoke({"messages": [("user", "What's the weather in London?")]})
+
+# Trace appears at: https://smith.langchain.com → your project → Traces</code></pre>
+  </div>
+
+  <h2>Reading a Trace</h2>
+
+  <p>Each trace is a tree. The root node is your top-level agent run; child nodes are individual LLM calls and tool invocations. Understanding the tree lets you quickly identify bottlenecks and failures.</p>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <h4>🏷 Root Node</h4>
+      <p>The full agent invocation. Shows total latency, total cost, input/output. Status: ✅ success or ❌ error.</p>
+    </div>
+    <div class="feature-card">
+      <h4>🤖 LLM Nodes</h4>
+      <p>Each model call. Shows the exact prompt sent, completion received, tokens used, latency. Click to see the full message list.</p>
+    </div>
+    <div class="feature-card">
+      <h4>🔧 Tool Nodes</h4>
+      <p>Each tool call. Shows name, input args as JSON, and the output returned. Latency tells you if a tool is slow.</p>
+    </div>
+    <div class="feature-card">
+      <h4>🔁 Loops</h4>
+      <p>Repeated LLM + tool cycles show as sequential children. Easy to spot infinite loops: trace has 20+ LLM nodes for a simple question.</p>
+    </div>
+  </div>
+
+  <h2>Adding Custom Spans</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">custom_tracing.py</span></div>
+    <pre><code class="language-python">from langsmith import traceable, trace
+
+# @traceable wraps any function as a traced span
+# — appears as a child node in the trace tree
+@traceable(name="fetch_user_profile", run_type="retrieval")
+async def fetch_user_profile(user_id: str) -> dict:
+    """Custom function that shows up in the trace."""
+    # ... database call etc.
+    return {"user_id": user_id, "tier": "premium"}
+
+# Add metadata to find traces by dimension
+@traceable(
+    name="classify_intent",
+    metadata={"model": "gpt-4o-mini", "use_case": "routing"}
+)
+async def classify_intent(message: str) -> str:
+    ...
+
+# Attach extra data mid-run (useful for logging retrieval results)
+with trace("retrieval_step") as run:
+    docs = retriever.invoke(query)
+    run.metadata["num_docs"] = len(docs)
+    run.metadata["query"] = query</code></pre>
+  </div>
+
+  <h2>Evaluation Datasets</h2>
+
+  <p>LangSmith datasets let you run your agent against a fixed set of inputs and compare outputs across versions — catch regressions before they reach production.</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">create_dataset.py</span></div>
+    <pre><code class="language-python">from langsmith import Client
+
+client = Client()
+
+# 1. Create a dataset
+dataset = client.create_dataset(
+    dataset_name="customer-support-evals",
+    description="Golden examples for the support agent"
+)
+
+# 2. Add examples: input + expected reference output
+examples = [
+    {
+        "inputs": {"question": "How do I cancel my subscription?"},
+        "outputs": {"answer": "Go to Settings → Billing → Cancel Plan"}
+    },
+    {
+        "inputs": {"question": "What payment methods do you accept?"},
+        "outputs": {"answer": "Visa, Mastercard, PayPal, and wire transfer"}
+    },
+    {
+        "inputs": {"question": "Can I get a refund?"},
+        "outputs": {"answer": "Yes, within 30 days of purchase"}
+    },
+]
+
+client.create_examples(
+    inputs=[e["inputs"] for e in examples],
+    outputs=[e["outputs"] for e in examples],
+    dataset_id=dataset.id,
+)
+
+print(f"Dataset created: {dataset.id}")
+# You can also add examples by clicking "+ Add row" in the LangSmith UI</code></pre>
+  </div>
+
+  <h2>Running Evaluations</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">run_evals.py</span></div>
+    <pre><code class="language-python">from langsmith import Client, evaluate
+from langsmith.evaluation import LangChainStringEvaluator
+
+client = Client()
+
+# Define what function to evaluate (your agent wrapped to match expected signature)
+def run_agent(inputs: dict) -> dict:
+    response = agent.invoke({
+        "messages": [("user", inputs["question"])]
+    })
+    return {"answer": response["messages"][-1].content}
+
+# Evaluators score each output
+# 1. LLM-as-judge: uses GPT to check correctness vs reference answer
+correctness_evaluator = LangChainStringEvaluator(
+    "labeled_criteria",
+    config={
+        "criteria": "correctness",
+        "llm": ChatOpenAI(model="gpt-4o", temperature=0),
+    }
+)
+
+# 2. Custom Python evaluator: simple string match
+def contains_key_info(run, example):
+    """Custom evaluator: does the answer contain the reference info?"""
+    reference = example.outputs.get("answer", "")
+    prediction = run.outputs.get("answer", "")
+
+    # Check if key words from reference appear in prediction
+    key_words = [w for w in reference.split() if len(w) > 4]
+    matches = sum(1 for w in key_words if w.lower() in prediction.lower())
+    score = matches / len(key_words) if key_words else 0
+
+    return {"key": "keyword_coverage", "score": score}
+
+# Run evaluation — creates an experiment in LangSmith
+results = evaluate(
+    run_agent,
+    data="customer-support-evals",   # dataset name
+    evaluators=[correctness_evaluator, contains_key_info],
+    experiment_prefix="claude-opus-4-5",  # name your experiment
+    max_concurrency=4,
+)
+
+print(results.to_pandas()[["correctness", "keyword_coverage"]].mean())</code></pre>
+  </div>
+
+  <h2>The Prompt Playground</h2>
+
+  <p>LangSmith's Playground lets you iterate on prompts directly in the browser against real LLM providers — no code needed. Open any trace → click "Open in Playground" → edit the system prompt → run. Compare outputs side-by-side before updating your code.</p>
+
+  <div class="callout info">
+    <div class="callout-icon">💡</div>
+    <div class="callout-content">
+      <strong>Hub: versioned prompt management</strong>
+      <p>Store prompts in LangSmith Hub and pull them by name + version in code: <code class="inline">from langsmith import hub; prompt = hub.pull("my-org/support-agent:v3")</code>. When you update the prompt in the UI and bump the version, rollback is a one-liner. This decouples prompt changes from code deploys.</p>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: PII in traces</strong>
+      <p>By default, LangSmith stores the full input and output of every LLM call — including any user messages or documents that contain personal information. Before enabling in production, review your data retention policies and use <code class="inline">hide_inputs=True</code> / <code class="inline">hide_outputs=True</code> on sensitive runs, or mask PII before logging. Enterprise LangSmith supports self-hosted deployment if data residency is a requirement.</p>
+    </div>
+  </div>
+
+  <div class="use-case">
+    <h4>🧪 Prompt Regression Testing</h4>
+    <p>A team ships a prompt update to their legal summarization agent. Before merging, they run <code>evaluate()</code> against a dataset of 50 golden contracts. The new prompt scores 0.89 on accuracy vs. 0.85 for the old one — a clear win. They compare side-by-side in LangSmith, verify the gains aren't just hallucinated confidence, and ship. Two weeks later a junior dev changes the system prompt "to fix a typo" and accidentally breaks formatting — the eval catches it in CI before it hits production.</p>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>Key Takeaways</strong>
+      <p>Three env vars enable full tracing with zero code changes: <code class="inline">LANGCHAIN_TRACING_V2</code>, <code class="inline">LANGCHAIN_API_KEY</code>, <code class="inline">LANGCHAIN_PROJECT</code>. Add <code class="inline">@traceable</code> to your own functions for custom spans. Build datasets from golden examples, then run <code class="inline">evaluate()</code> to catch regressions. Use the Playground for prompt iteration and Hub for versioned prompt management. Be careful with PII — traces store full message content by default.</p>
+    </div>
+  </div>
+
+  <div class="mod-nav">
+    <a href="28-advanced-frontend.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 28: Advanced Frontend</strong></div>
+    </a>
+    <a href="30-testing-agents.html" class="nav-btn next">
+      <div><small>Next up</small><strong>Module 30: Testing Agents →</strong></div>
+      <span style="font-size:20px">➡</span>
+    </a>
+  </div>
+
+</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

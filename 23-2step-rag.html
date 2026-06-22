@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 23: 2-Step RAG — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F0F4F8;--surface:#FFF;--sidebar-bg:#0F172A;--sidebar-w:272px;--accent:#006DDD;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--green:#16A34A;--orange:#EA580C;--purple:#7C3AED;--teal:#0D9488}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:#CCFBF1;color:#0F766E;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#CCFBF1,#A7F3D0);border:1px solid #6EE7B7;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#065F46;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#EFF6FF;border-left:4px solid var(--accent)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+
+/* two-step comparison */
+.step-compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.step-card{border-radius:10px;padding:16px 18px;border:1px solid var(--border)}
+.step-card.naive{background:#FEF2F2;border-color:#FECACA}
+.step-card.twostep{background:#F0FDF4;border-color:#BBF7D0}
+.step-card h4{font-size:14px;font-weight:700;margin-bottom:8px}
+.step-card.naive h4{color:#991B1B}
+.step-card.twostep h4{color:#166534}
+.step-card p{font-size:13px;margin:0;color:#475569}
+
+/* technique tabs */
+.technique-tabs{display:flex;gap:8px;margin-bottom:-1px;position:relative;z-index:1}
+.tab-btn{padding:8px 18px;border:1px solid var(--border);border-bottom:none;border-radius:8px 8px 0 0;background:#F8FAFC;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.tab-btn.active{background:#fff;color:#0F172A;border-bottom:2px solid #fff}
+.tab-pane{display:none;background:#fff;border:1px solid var(--border);border-radius:0 8px 8px 8px;padding:20px}
+.tab-pane.active{display:block}
+.tab-pane p{margin:0 0 12px;font-size:14px;color:#334155}
+
+.use-case{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #BAE6FD}
+.use-case h4{color:#1E40AF;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn.next{justify-content:flex-end;text-align:right}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="sidebar-brand">🦜 LangChain Course</div><div class="sidebar-title">Byte-Sized Lessons</div></div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="23-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 23 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link active"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 6 · Module 23 · Retrieval &amp; RAG</div>
+  <h1>2-Step RAG — Better Retrieval with Query Rewriting &amp; Reranking</h1>
+  <div class="mod-meta">
+    <span>⏱ ~20 min</span><span>💻 Runnable code</span><span>🔍 Precision retrieval</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll learn:</strong> Why naive vector search often retrieves the wrong chunks, and three techniques that fix it: query rewriting (before retrieval), hybrid search (semantic + keyword), and cross-encoder reranking (after retrieval).</p>
+  </div>
+
+  <div class="callout analogy">
+    <div class="callout-icon">🔎</div>
+    <div class="callout-content">
+      <strong>Analogy: the librarian's two jobs</strong>
+      <p>A good librarian doesn't just search by your exact words — they first clarify what you actually need ("are you looking for the history or the science?"), then they search, and then they rank the results by relevance to your actual goal, not just keyword frequency. 2-step RAG does the same: rewrite the query to what the retriever should find, then rerank the results by true relevance before passing them to the model.</p>
+    </div>
+  </div>
+
+  <h2>The Problem with Naive RAG</h2>
+
+  <div class="step-compare">
+    <div class="step-card naive">
+      <h4>❌ Naive RAG fails when…</h4>
+      <p>The user's question is ambiguous ("how do I do it?"), uses conversational language that doesn't match document terminology, asks a multi-part question, or asks a follow-up that depends on prior conversation context. The embedding of "how do I do it?" matches nothing useful.</p>
+    </div>
+    <div class="step-card twostep">
+      <h4>✅ 2-Step RAG solves this by…</h4>
+      <p>Using an LLM to rewrite the user's question into a precise search query before retrieval, then reranking the retrieved chunks by actual relevance before passing them to the final generation step. Two small LLM calls dramatically improve the quality of what the model sees.</p>
+    </div>
+  </div>
+
+  <h2>Technique 1: Query Rewriting</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">query_rewriting.py</span></div>
+    <pre><code class="language-python">from langchain.chat_models import init_chat_model
+from langchain_core.messages import HumanMessage, SystemMessage
+from pydantic import BaseModel
+
+llm = init_chat_model("openai:gpt-4o-mini")
+
+# ── Simple query rewriting ─────────────────────────────────────────────────────
+class RewrittenQuery(BaseModel):
+    standalone_query: str
+    search_queries: list[str]  # Multiple search angles
+
+rewriter = llm.with_structured_output(RewrittenQuery)
+
+def rewrite_query(user_question: str, chat_history: list = None) -> RewrittenQuery:
+    """Convert a conversational question into precise search queries."""
+    history_text = ""
+    if chat_history:
+        history_text = "\n".join([
+            f"User: {m['user']}\nAssistant: {m['assistant']}"
+            for m in chat_history[-3:]  # last 3 turns
+        ])
+
+    result = rewriter.invoke([
+        SystemMessage(f"""Given a conversation and a follow-up question, rewrite the question into:
+1. A standalone question that captures full intent (even if it's a follow-up)
+2. 2-3 search query variations to maximize retrieval coverage
+
+Conversation history:
+{history_text or "(none)"}"""),
+        HumanMessage(user_question)
+    ])
+    return result
+
+# Example
+history = [
+    {"user": "Tell me about our sick leave policy", "assistant": "Employees get 10 sick days per year..."}
+]
+rewritten = rewrite_query("Can I carry those over?", history)
+print(rewritten.standalone_query)
+# → "Can unused sick leave days be carried over to the next year?"
+print(rewritten.search_queries)
+# → ["sick leave carryover policy", "unused PTO rollover", "sick days carry forward"]
+
+# Use all search queries and merge results
+def multi_query_retrieve(rewritten: RewrittenQuery, retriever, top_k=6):
+    """Run multiple query variations and deduplicate results."""
+    seen_ids = set()
+    all_docs = []
+
+    # Include the standalone query + all search variations
+    queries = [rewritten.standalone_query] + rewritten.search_queries
+
+    for query in queries:
+        docs = retriever.invoke(query)
+        for doc in docs:
+            doc_id = hash(doc.page_content[:100])
+            if doc_id not in seen_ids:
+                seen_ids.add(doc_id)
+                all_docs.append(doc)
+
+    return all_docs[:top_k]</code></pre>
+  </div>
+
+  <h2>Technique 2: Hybrid Search (Semantic + Keyword)</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">hybrid_search.py</span></div>
+    <pre><code class="language-python">from langchain.retrievers import EnsembleRetriever
+from langchain_community.retrievers import BM25Retriever
+from langchain_chroma import Chroma
+from langchain_openai import OpenAIEmbeddings
+
+# ── Two retrievers with different strengths ────────────────────────────────────
+# 1. Dense (semantic) retriever — great for meaning and paraphrase
+dense_retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+
+# 2. Sparse (keyword/BM25) retriever — great for exact terms, codes, IDs
+#    BM25 needs the raw documents list at construction time
+bm25_retriever = BM25Retriever.from_documents(chunks, k=5)
+
+# ── Ensemble: weighted combination of both ────────────────────────────────────
+# weights must sum to 1.0
+ensemble_retriever = EnsembleRetriever(
+    retrievers=[dense_retriever, bm25_retriever],
+    weights=[0.6, 0.4],  # 60% semantic, 40% keyword
+)
+
+# Use it exactly like a regular retriever
+docs = ensemble_retriever.invoke("GDPR Article 17 right to erasure policy")
+# Dense finds conceptually similar docs about data deletion
+# BM25 finds docs that literally mention "Article 17" or "right to erasure"
+# Ensemble merges and deduplicates both sets
+
+# For persistent hybrid search, pgvector supports both:
+from langchain_postgres import PGVector
+from langchain_postgres.hybrid_search import PGVectorHybridSearch
+
+# pg_retriever = PGVectorHybridSearch(connection_string=..., embeddings=...)
+# Queries both tsvector (keyword) and pgvector (semantic) in one SQL call</code></pre>
+  </div>
+
+  <h2>Technique 3: Cross-Encoder Reranking</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">reranking.py</span></div>
+    <pre><code class="language-python">from langchain.retrievers.document_compressors import CrossEncoderReranker
+from langchain.retrievers import ContextualCompressionRetriever
+from langchain_community.cross_encoders import HuggingFaceCrossEncoder
+
+# ── Why rerank? ────────────────────────────────────────────────────────────────
+# Vector search ranks by embedding similarity — fast but approximate.
+# A cross-encoder reads the FULL query + document pair and scores relevance
+# directly. Much more accurate, but slower. Run it on the top-20 candidates
+# to select the best 4 to pass to the model.
+
+# ── Using a HuggingFace cross-encoder (free, runs locally) ────────────────────
+cross_encoder = HuggingFaceCrossEncoder(
+    model_name="cross-encoder/ms-marco-MiniLM-L-6-v2"
+)
+
+reranker = CrossEncoderReranker(model=cross_encoder, top_n=4)
+
+# Wrap the base retriever with the reranker
+# Flow: base_retriever returns 20 docs → reranker scores all 20 → top 4 returned
+compression_retriever = ContextualCompressionRetriever(
+    base_compressor=reranker,
+    base_retriever=ensemble_retriever.as_retriever(search_kwargs={"k": 20}),
+)
+
+docs = compression_retriever.invoke("what is the employee vacation policy?")
+# Returns only the 4 most relevant chunks, scored by actual query-document relevance
+
+# ── Cohere Reranker (API-based, higher quality) ────────────────────────────────
+from langchain_cohere import CohereRerank
+
+cohere_reranker = CohereRerank(
+    model="rerank-english-v3.0",
+    top_n=4,
+)
+
+cohere_retriever = ContextualCompressionRetriever(
+    base_compressor=cohere_reranker,
+    base_retriever=ensemble_retriever,
+)</code></pre>
+  </div>
+
+  <h2>The Full 2-Step Pipeline</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">two_step_pipeline.py</span></div>
+    <pre><code class="language-python">from langchain.chat_models import init_chat_model
+from langchain_core.messages import SystemMessage, HumanMessage
+
+final_llm = init_chat_model("openai:gpt-4o-mini")
+
+def two_step_rag(question: str, chat_history: list = None) -> str:
+    """
+    Full 2-step RAG pipeline:
+    1. Rewrite query → multi-query retrieve → rerank
+    2. Generate answer from reranked context
+    """
+    # ── Step 1a: Rewrite ──────────────────────────────────────────────────────
+    rewritten = rewrite_query(question, chat_history)
+    print(f"Rewritten query: {rewritten.standalone_query}")
+
+    # ── Step 1b: Multi-query retrieve with hybrid search ──────────────────────
+    candidate_docs = multi_query_retrieve(rewritten, ensemble_retriever, top_k=20)
+    print(f"Retrieved {len(candidate_docs)} candidates")
+
+    # ── Step 1c: Rerank to top 4 ──────────────────────────────────────────────
+    # Cross-encoder scores each (query, document) pair independently
+    ranked = cross_encoder.score([
+        (rewritten.standalone_query, doc.page_content)
+        for doc in candidate_docs
+    ])
+    top_docs = [doc for _, doc in sorted(zip(ranked, candidate_docs), reverse=True)[:4]]
+    print(f"Reranked to top {len(top_docs)} docs")
+
+    # ── Step 2: Generate ──────────────────────────────────────────────────────
+    context = "\n\n---\n\n".join([
+        f"[Source: {doc.metadata.get('source', 'unknown')}]\n{doc.page_content}"
+        for doc in top_docs
+    ])
+
+    response = final_llm.invoke([
+        SystemMessage(f"""Answer the question using ONLY the context below.
+Cite sources with [Source: filename] notation.
+If the context doesn't contain the answer, say so clearly.
+
+Context:
+{context}"""),
+        HumanMessage(rewritten.standalone_query),
+    ])
+
+    return response.content
+
+# Use it as an agent tool
+@tool
+def search_knowledge_base(question: str, runtime: ToolRuntime) -> str:
+    """Search company knowledge base with intelligent query rewriting and reranking.
+
+    Args:
+        question: The question to answer from the knowledge base.
+    """
+    return two_step_rag(question)</code></pre>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: reranking adds latency and cost</strong>
+      <p>Running a cross-encoder on 20 documents adds ~200–500ms of latency. For user-facing applications, cache reranked results for common queries, or use the Cohere API which is already optimized. If latency is critical and you can't cache, skip the cross-encoder and use hybrid search alone — it gets you 80% of the benefit. Only add reranking when retrieval quality is genuinely a problem.</p>
+    </div>
+  </div>
+
+  <div class="use-case">
+    <h4>📋 IT Support Knowledge Bot</h4>
+    <p>An IT helpdesk bot suffers from poor retrieval — when users ask "my laptop screen went dark", it retrieves docs about screen brightness settings instead of the power management troubleshooting guide. With query rewriting, the ambiguous query becomes "laptop display turns off power management troubleshooting". With hybrid search, it catches both semantic matches and exact ticket references like "JIRA-2847". With reranking, the actual troubleshooting steps move to the top. First-contact resolution rate improves from 42% to 71%.</p>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>Key Takeaways</strong>
+      <p>Three techniques stack on basic RAG: query rewriting (LLM rewrites vague questions into precise search terms before retrieval), hybrid search (combine dense semantic + sparse BM25 keyword search via <code class="inline">EnsembleRetriever</code>), and cross-encoder reranking (score query-document pairs more accurately after retrieval via <code class="inline">ContextualCompressionRetriever</code>). Use all three together for the best quality. Add incrementally starting with query rewriting, which gives the biggest bang for the buck.</p>
+    </div>
+  </div>
+
+  <div class="mod-nav">
+    <a href="22-rag-fundamentals.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 22: RAG Fundamentals</strong></div>
+    </a>
+    <a href="24-agentic-rag.html" class="nav-btn next">
+      <div><small>Next up</small><strong>Module 24: Agentic &amp; Hybrid RAG →</strong></div>
+      <span style="font-size:20px">➡</span>
+    </a>
+  </div>
+
+</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 05: Tools — Creating &amp; Registering — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F0F4F8;--surface:#FFFFFF;--sidebar-bg:#0F172A;--sidebar-w:272px;
+  --accent:#006DDD;--accent-light:#E0F2FE;
+  --text:#1E293B;--muted:#64748B;--border:#E2E8F0;
+  --green:#16A34A;--orange:#EA580C;--purple:#7C3AED;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:#F0FDF4;color:#166534;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#F0FDF4,#ECFDF5);border:1px solid #A7F3D0;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#065F46;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+h3{font-size:1.05rem;font-weight:700;color:#1E293B;margin:28px 0 10px}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#EFF6FF;border-left:4px solid var(--accent)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+
+/* annotated code */
+.annotated{position:relative;margin:20px 0}
+.annotation{display:flex;gap:10px;margin-bottom:6px;align-items:flex-start}
+.ann-num{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.ann-text{font-size:13.5px;color:#334155}
+
+/* anatomy diagram */
+.tool-anatomy{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:24px 0}
+.tool-anatomy-header{background:#F8FAFC;padding:14px 20px;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:#0F172A}
+.tool-anatomy-body{padding:20px}
+.anatomy-row{display:flex;align-items:flex-start;gap:16px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #F1F5F9}
+.anatomy-row:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.anatomy-label{min-width:130px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);padding-top:2px}
+.anatomy-value{flex:1;font-size:13.5px;color:#334155}
+.anatomy-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700}
+.anatomy-badge.required{background:#FEE2E2;color:#BE123C}
+.anatomy-badge.auto{background:#EFF6FF;color:#1D4ED8}
+.anatomy-badge.optional{background:#F0FDF4;color:#15803D}
+
+/* tool examples grid */
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.tool-example{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.tool-example-head{background:#F8FAFC;padding:10px 16px;font-size:12px;font-weight:700;color:#334155;border-bottom:1px solid var(--border)}
+
+/* return type pills */
+.return-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}
+.return-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:14px}
+.return-type{font-family:monospace;font-size:13px;font-weight:700;color:#0F172A;margin-bottom:6px}
+.return-when{font-size:12px;color:var(--muted)}
+
+/* schema comparison */
+.schema-compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.schema-side{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.schema-head{padding:10px 16px;font-size:12px;font-weight:700;border-bottom:1px solid var(--border)}
+.schema-head.good{background:#F0FDF4;color:#15803D}
+.schema-head.bad{background:#FFF1F2;color:#BE123C}
+
+.use-case{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #BAE6FD}
+.use-case h4{color:#1E40AF;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn.next{justify-content:flex-end;text-align:right}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.tool-grid,.schema-compare,.return-grid{grid-template-columns:1fr}.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">🦜 LangChain Course</div>
+    <div class="sidebar-title">Byte-Sized Lessons</div>
+  </div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="05-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 05 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link active"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 2 · Module 05 · Core Component</div>
+  <h1>Tools — Creating &amp; Registering</h1>
+  <div class="mod-meta">
+    <span>⏱ ~20 min</span>
+    <span>💻 Runnable code</span>
+    <span>⚠ Key gotchas</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll learn:</strong> How to create tools using the <code>@tool</code> decorator, what makes a well-designed tool (name, description, schema), how tools become part of an agent, different ways to return values from tools, and how error handling works.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px 22px;margin:28px 0">
+    <div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">📐 Structural overview — Anatomy of a @tool</div>
+    <img src="diagrams/05-tool-anatomy.svg" alt="Anatomy of a @tool diagram" loading="lazy" style="width:100%;height:auto;display:block;border:1px solid #F1F5F9;border-radius:8px;background:#fff">
+    <p style="font-size:12.5px;color:#64748B;margin:12px 0 0">
+      <a href="diagrams/05-tool-anatomy.svg" target="_blank" style="color:#006DDD;font-weight:600;text-decoration:none">↗ Open full size</a>
+      &nbsp;&middot;&nbsp;
+      <a href="diagrams/05-tool-anatomy.excalidraw" download style="color:#006DDD;font-weight:600;text-decoration:none">⬇ Edit in Excalidraw</a>
+      &nbsp;— labels use real LangChain classes.
+    </p>
+  </div>
+
+
+  <h2>What Is a Tool?</h2>
+  <p>A <strong>tool</strong> is a Python function that an LLM can call. When the model decides to use a tool, it generates a structured call with arguments, LangChain executes the function, and the result goes back to the model as a ToolMessage.</p>
+
+  <div class="callout analogy">
+    <div class="callout-icon">💡</div>
+    <div class="callout-content">
+      <strong>The Swiss Army Knife Analogy</strong>
+      <p>Think of tools like the blades on a Swiss Army knife. Each tool has a specific purpose. The model (the hand holding the knife) chooses which blade to deploy based on the task. Your job as a developer is to: (1) create the right blades for your use case, (2) give each blade a clear label so the model knows when to use it, and (3) make sure each blade does exactly what its label says.</p>
+    </div>
+  </div>
+
+  <h2>The <code class="inline">@tool</code> Decorator: The Simplest Way</h2>
+  <p>Decorate any Python function with <code class="inline">@tool</code> and it becomes a LangChain tool:</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">basic_tool.py</span></div>
+    <pre><code class="language-python">from langchain.tools import tool
+
+@tool
+def get_word_count(text: str) -> int:
+    """Count the number of words in a text string.
+
+    Args:
+        text: The text to count words in.
+
+    Returns:
+        The number of words.
+    """
+    return len(text.split())
+
+# Inspect what was generated automatically:
+print(get_word_count.name)         # "get_word_count"
+print(get_word_count.description)  # "Count the number of words in a text string..."
+print(get_word_count.args_schema)  # Pydantic schema for {"text": str}</code></pre>
+  </div>
+
+  <h2>Anatomy of a Well-Designed Tool</h2>
+
+  <div class="tool-anatomy">
+    <div class="tool-anatomy-header">🔬 What <code>@tool</code> reads from your function</div>
+    <div class="tool-anatomy-body">
+      <div class="anatomy-row">
+        <div class="anatomy-label">Function name <span class="anatomy-badge required">required</span></div>
+        <div class="anatomy-value">Becomes the tool's <code class="inline">name</code>. The model sees this when deciding which tool to call. Make it a clear verb phrase: <code class="inline">search_web</code>, <code class="inline">get_customer_by_id</code>, <code class="inline">send_email</code>.</div>
+      </div>
+      <div class="anatomy-row">
+        <div class="anatomy-label">Docstring <span class="anatomy-badge required">required</span></div>
+        <div class="anatomy-value">Becomes the tool's <code class="inline">description</code>. The model reads this to decide <em>when</em> to use the tool. Write for the model, not for developers. Include: what the tool does, when to use it, and what it returns.</div>
+      </div>
+      <div class="anatomy-row">
+        <div class="anatomy-label">Type hints <span class="anatomy-badge required">required</span></div>
+        <div class="anatomy-value">Generate the tool's input schema automatically. The model uses this schema to format its tool calls correctly. Missing or wrong type hints = model can't call the tool reliably.</div>
+      </div>
+      <div class="anatomy-row">
+        <div class="anatomy-label">Return type <span class="anatomy-badge optional">optional hint</span></div>
+        <div class="anatomy-value">Not used for schema generation, but good practice. The actual return value is serialized and returned as the tool result message.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Customizing Tool Name and Description</h2>
+  <p>Sometimes the function name isn't the best tool name, or you need more control over the description:</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">custom_tool.py</span></div>
+    <pre><code class="language-python">from langchain.tools import tool
+
+# Custom name and description
+@tool(name="search_product_catalog", description=(
+    "Search the product catalog by keyword. Use when the user asks about "
+    "products, prices, availability, or specifications. Returns a list of "
+    "matching products with their prices and stock levels."
+))
+def search_products(query: str, max_results: int = 5) -> list[dict]:
+    # implementation
+    return [{"name": "Widget A", "price": 29.99, "in_stock": True}]
+
+# parse_docstring=True (default) uses the docstring for description
+# parse_docstring=False lets you set it via the decorator argument
+@tool(parse_docstring=True)
+def calculate_discount(
+    price: float,
+    discount_percent: float
+) -> float:
+    """Calculate the final price after applying a discount.
+
+    Args:
+        price: The original price in dollars.
+        discount_percent: The discount percentage (0-100).
+
+    Returns:
+        The final price after discount.
+    """
+    return price * (1 - discount_percent / 100)</code></pre>
+  </div>
+
+  <h2>Complex Input Schemas with Pydantic</h2>
+  <p>For tools with complex or nested inputs, use Pydantic models to define the schema explicitly:</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">pydantic_tool.py</span></div>
+    <pre><code class="language-python">from langchain.tools import tool
+from pydantic import BaseModel, Field
+from typing import Optional, Literal
+
+# Define the input schema separately
+class SendEmailInput(BaseModel):
+    to: str = Field(description="Recipient email address")
+    subject: str = Field(description="Email subject line")
+    body: str = Field(description="Email body in plain text or markdown")
+    cc: Optional[list[str]] = Field(
+        default=None,
+        description="Optional list of CC recipients"
+    )
+    priority: Literal["low", "normal", "high"] = Field(
+        default="normal",
+        description="Email priority level"
+    )
+
+# Pass schema to @tool
+@tool(args_schema=SendEmailInput)
+def send_email(to: str, subject: str, body: str,
+               cc: Optional[list[str]] = None,
+               priority: str = "normal") -> str:
+    """Send an email to one or more recipients.
+
+    Use this when the user wants to send, compose, or draft an email.
+    Returns a confirmation message with message ID.
+    """
+    # implementation
+    return f"Email sent to {to} with subject '{subject}'. Message ID: msg_abc123"
+
+# Inspect the generated schema
+import json
+print(json.dumps(send_email.get_input_schema().model_json_schema(), indent=2))</code></pre>
+  </div>
+
+  <h2>Return Types</h2>
+  <p>Tools can return several different types. LangChain serializes most of them automatically:</p>
+
+  <div class="return-grid">
+    <div class="return-card">
+      <div class="return-type">str</div>
+      <div class="return-when">Most common. The model reads it directly as text. Good for explanatory results.</div>
+    </div>
+    <div class="return-card">
+      <div class="return-type">dict</div>
+      <div class="return-when">Serialized to JSON. Good for structured data the model needs to parse.</div>
+    </div>
+    <div class="return-card">
+      <div class="return-type">list</div>
+      <div class="return-when">Serialized to JSON array. Use for collections of results.</div>
+    </div>
+    <div class="return-card">
+      <div class="return-type">int / float</div>
+      <div class="return-when">Converted to string. Simple numeric results.</div>
+    </div>
+    <div class="return-card">
+      <div class="return-type">Command</div>
+      <div class="return-when">Advanced: returns a value AND updates agent state. See Module 06.</div>
+    </div>
+    <div class="return-card">
+      <div class="return-type">ToolMessage</div>
+      <div class="return-when">Full control over the tool result message, including metadata.</div>
+    </div>
+  </div>
+
+  <h2>Real-World Tool Examples</h2>
+
+  <div class="tool-grid">
+    <div class="tool-example">
+      <div class="tool-example-head">🔍 Web Search Tool</div>
+      <div class="code-wrap" style="margin:0;border-radius:0">
+        <pre><code class="language-python">@tool
+def search_web(query: str) -> str:
+    """Search the web for current information.
+    Use for recent events, facts, or anything
+    that might not be in training data.
+
+    Args:
+        query: The search query string.
+    """
+    import httpx
+    r = httpx.get(
+        "https://api.search.example.com/search",
+        params={"q": query, "limit": 3},
+        headers={"Authorization": f"Bearer {API_KEY}"}
+    )
+    results = r.json()["results"]
+    return "\n".join(
+        f"[{i+1}] {r['title']}: {r['snippet']}"
+        for i, r in enumerate(results)
+    )</code></pre>
+      </div>
+    </div>
+
+    <div class="tool-example">
+      <div class="tool-example-head">🗄️ Database Query Tool</div>
+      <div class="code-wrap" style="margin:0;border-radius:0">
+        <pre><code class="language-python">@tool
+def get_customer(customer_id: str) -> dict:
+    """Look up a customer by their ID.
+    Returns customer name, email, plan,
+    and account status.
+
+    Args:
+        customer_id: The unique customer ID
+            (format: CUST-XXXXXX).
+    """
+    # conn from connection pool
+    row = db.execute(
+        "SELECT name, email, plan, status "
+        "FROM customers WHERE id = ?",
+        [customer_id]
+    ).fetchone()
+    if not row:
+        return {"error": f"No customer: {customer_id}"}
+    return dict(row)</code></pre>
+      </div>
+    </div>
+
+    <div class="tool-example">
+      <div class="tool-example-head">🐍 Run Python Code Tool</div>
+      <div class="code-wrap" style="margin:0;border-radius:0">
+        <pre><code class="language-python">@tool
+def run_python(code: str) -> str:
+    """Execute Python code and return output.
+    Use for calculations, data transformations,
+    or generating visualizations.
+    Only use safe, non-destructive operations.
+
+    Args:
+        code: Valid Python code to execute.
+    """
+    import io, contextlib
+    buf = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(buf):
+            exec(code, {"__builtins__": __builtins__})
+        return buf.getvalue() or "Executed successfully."
+    except Exception as e:
+        return f"Error: {e}"</code></pre>
+      </div>
+    </div>
+
+    <div class="tool-example">
+      <div class="tool-example-head">📅 Calendar Tool</div>
+      <div class="code-wrap" style="margin:0;border-radius:0">
+        <pre><code class="language-python">from pydantic import BaseModel
+from datetime import datetime
+
+class CreateEventInput(BaseModel):
+    title: str
+    start: datetime
+    end: datetime
+    attendees: list[str] = []
+
+@tool(args_schema=CreateEventInput)
+def create_calendar_event(
+    title: str, start: datetime,
+    end: datetime, attendees: list[str] = []
+) -> str:
+    """Create a calendar event and invite attendees.
+    Use when the user wants to schedule a meeting."""
+    # Calendar API call
+    return f"Created: '{title}' on {start.date()}"</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <h2>Error Handling in Tools</h2>
+  <p>Tools can fail. Here's the best way to handle errors so the agent can recover gracefully:</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">error_handling.py</span></div>
+    <pre><code class="language-python">from langchain.tools import tool
+from langchain_core.tools import ToolException
+
+@tool
+def fetch_url(url: str) -> str:
+    """Fetch the content of a webpage.
+
+    Args:
+        url: The URL to fetch (must start with https://).
+    """
+    if not url.startswith("https://"):
+        # Raising ToolException sends the error back to the model
+        # as a ToolMessage, letting it recover or try a different approach
+        raise ToolException(
+            f"Only HTTPS URLs are supported. Got: {url}"
+        )
+    try:
+        import httpx
+        response = httpx.get(url, timeout=10)
+        response.raise_for_status()
+        return response.text[:2000]  # cap at 2000 chars
+    except httpx.TimeoutException:
+        raise ToolException(f"Timeout fetching {url}. The server may be slow.")
+    except httpx.HTTPStatusError as e:
+        raise ToolException(f"HTTP {e.response.status_code} fetching {url}")
+
+# By default, ToolException turns into a ToolMessage with the error text.
+# The model sees the error and can try again or take a different approach.
+
+# To handle_tool_error more explicitly, use handle_tool_error=True:
+# @tool(handle_tool_error=True)   # returns error string, never raises to agent
+# @tool(handle_tool_error="Custom error message")   # fixed error message</code></pre>
+  </div>
+
+  <h2>Adding Tools to an Agent</h2>
+  <p>Tools get passed to <code class="inline">create_agent()</code> as a list:</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">agent_with_tools.py</span></div>
+    <pre><code class="language-python">from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+from langchain.tools import tool
+
+@tool
+def search_web(query: str) -> str:
+    """Search the web for information."""
+    ...
+
+@tool
+def run_python(code: str) -> str:
+    """Execute Python code."""
+    ...
+
+@tool
+def read_file(path: str) -> str:
+    """Read the contents of a local file."""
+    ...
+
+agent = create_agent(
+    model=init_chat_model("openai:gpt-4o"),
+    tools=[search_web, run_python, read_file],  # list of decorated functions
+    system_prompt="You are a research assistant with access to the web and local files.",
+)
+
+result = agent.invoke({
+    "messages": [{"role": "user", "content": "Find the latest LangChain version and tell me what's new."}]
+})
+print(result["messages"][-1].content)</code></pre>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-icon">💡</div>
+    <div class="callout-content">
+      <strong>Tool schema validation</strong>
+      <p>When you pass tools to <code class="inline">create_agent()</code>, LangChain automatically generates the tool schema (the JSON structure the model uses to call it) from your type hints and docstring. You can inspect the generated schema any time: <code class="inline">my_tool.get_input_schema().model_json_schema()</code>.</p>
+    </div>
+  </div>
+
+  <h2>Writing Good vs. Bad Tool Descriptions</h2>
+
+  <div class="schema-compare">
+    <div class="schema-side">
+      <div class="schema-head bad">❌ Bad — model won't know when to use this</div>
+      <div class="code-wrap" style="margin:0;border-radius:0">
+        <pre><code class="language-python">@tool
+def search(q: str) -> str:
+    """Search."""
+    ...</code></pre>
+      </div>
+    </div>
+    <div class="schema-side">
+      <div class="schema-head good">✓ Good — specific, action-oriented</div>
+      <div class="code-wrap" style="margin:0;border-radius:0">
+        <pre><code class="language-python">@tool
+def search_web(query: str) -> str:
+    """Search the web for current information.
+    Use when the user asks about recent events,
+    news, or anything that may not be in the
+    model's training data. Returns summaries
+    of the top search results."""
+    ...</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: Type hints are non-negotiable</strong>
+      <p>A tool without type hints generates an empty schema — the model will receive a tool with no parameters and won't be able to call it correctly. Always type-hint every parameter. This includes the return type (it's not used for schema generation, but helps you and your IDE).</p>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: Reserved parameter names</strong>
+      <p>Do NOT name your tool parameters <code class="inline">config</code> or <code class="inline">runtime</code>. These are reserved names that LangChain uses for injecting the RunnableConfig and ToolRuntime objects respectively. Using them will cause unexpected behavior or errors. Module 06 covers ToolRuntime in detail.</p>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: async tools in sync agents</strong>
+      <p>If your tool is defined with <code class="inline">async def</code>, you must invoke the agent with <code class="inline">await agent.ainvoke()</code> or use <code class="inline">asyncio.run()</code>. Mixing sync <code class="inline">agent.invoke()</code> with async tools will raise a runtime error. The fix: either make all tools sync, or use async throughout.</p>
+    </div>
+  </div>
+
+  <h2>Real-World Use Case</h2>
+  <div class="use-case">
+    <h4>🛒 E-commerce Support Agent</h4>
+    <p>An agent handles customer support with six tools: <code class="inline">get_order_status(order_id)</code>, <code class="inline">initiate_return(order_id, reason)</code>, <code class="inline">get_product_info(sku)</code>, <code class="inline">check_store_inventory(sku, zip_code)</code>, <code class="inline">apply_promo_code(code, cart_id)</code>, and <code class="inline">escalate_to_human(summary, priority)</code>. Each tool has a precise docstring that tells the model exactly when to use it. The result: customers can track orders, start returns, and check inventory — all in natural language, all handled automatically.</p>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>Key Takeaways</strong>
+      <p>The <code class="inline">@tool</code> decorator turns any typed Python function into an agent tool. Three things drive quality: a clear name, a descriptive docstring (write it for the model), and type hints (they generate the schema). Use <code class="inline">ToolException</code> for recoverable errors. Module 06 covers the advanced side: injecting state into tools, streaming from within tools, and the <code class="inline">Command</code> return type.</p>
+    </div>
+  </div>
+
+  <div class="mod-nav">
+    <a href="04-messages.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 04: Messages</strong></div>
+    </a>
+    <a href="06-tools-advanced.html" class="nav-btn next">
+      <div><small>Next up</small><strong>Module 06: Tools — Advanced →</strong></div>
+      <span style="font-size:20px">➡</span>
+    </a>
+  </div>
+
+</div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

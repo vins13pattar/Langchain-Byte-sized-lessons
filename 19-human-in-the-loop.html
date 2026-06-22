@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 19: Human-in-the-Loop — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F0F4F8;--surface:#FFF;--sidebar-bg:#0F172A;--sidebar-w:272px;--accent:#006DDD;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--green:#16A34A;--orange:#EA580C;--purple:#7C3AED}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:#EEF2FF;color:#3730A3;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:1px solid #C7D2FE;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#3730A3;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#EFF6FF;border-left:4px solid var(--accent)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+
+/* Flow diagram */
+.hitl-flow{margin:24px 0}
+.hitl-step{display:flex;align-items:flex-start;gap:16px;padding:16px 20px;margin-bottom:4px;border-radius:8px}
+.hitl-step.run{background:#EEF2FF}
+.hitl-step.pause{background:#FEF3C7;border-left:4px solid #F59E0B}
+.hitl-step.review{background:#F0FDF4;border-left:4px solid #16A34A}
+.hitl-step.resume{background:#EEF2FF}
+.hitl-step.reject{background:#FEF2F2;border-left:4px solid #DC2626}
+.hitl-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+.run .hitl-num{background:#C7D2FE;color:#3730A3}
+.pause .hitl-num{background:#FDE68A;color:#92400E}
+.review .hitl-num{background:#BBF7D0;color:#166534}
+.resume .hitl-num{background:#C7D2FE;color:#3730A3}
+.reject .hitl-num{background:#FECACA;color:#991B1B}
+.hitl-step-body strong{font-size:14px;display:block;margin-bottom:4px}
+.hitl-step-body p{font-size:13px;color:var(--muted);margin:0}
+
+.use-case{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #BAE6FD}
+.use-case h4{color:#1E40AF;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn.next{justify-content:flex-end;text-align:right}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="sidebar-brand">🦜 LangChain Course</div><div class="sidebar-title">Byte-Sized Lessons</div></div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="19-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 19 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link active"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 5 · Module 19 · Advanced Patterns</div>
+  <h1>Human-in-the-Loop — Pause, Review &amp; Resume</h1>
+  <div class="mod-meta">
+    <span>⏱ ~22 min</span><span>💻 Runnable code</span><span>🙋 Approval workflows</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll learn:</strong> How to pause agent execution mid-run for human approval, inspect the paused state, resume or reject with new instructions — and build a full async approval workflow using <code>HumanInTheLoopMiddleware</code> and the checkpointer.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px 22px;margin:28px 0">
+    <div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">📐 Structural overview — Human-in-the-loop flow</div>
+    <img src="diagrams/19-human-in-the-loop.svg" alt="Human-in-the-loop flow diagram" loading="lazy" style="width:100%;height:auto;display:block;border:1px solid #F1F5F9;border-radius:8px;background:#fff">
+    <p style="font-size:12.5px;color:#64748B;margin:12px 0 0">
+      <a href="diagrams/19-human-in-the-loop.svg" target="_blank" style="color:#006DDD;font-weight:600;text-decoration:none">↗ Open full size</a>
+      &nbsp;&middot;&nbsp;
+      <a href="diagrams/19-human-in-the-loop.excalidraw" download style="color:#006DDD;font-weight:600;text-decoration:none">⬇ Edit in Excalidraw</a>
+      &nbsp;— labels use real LangChain classes.
+    </p>
+  </div>
+
+
+  <div class="callout analogy">
+    <div class="callout-icon">🚦</div>
+    <div class="callout-content">
+      <strong>Analogy: the four-eyes principle</strong>
+      <p>Banks require two people to sign off on large transactions — not because either person is untrustworthy, but because consequences are too large for one judgment. HITL agents work the same way: for high-stakes actions (sending emails, deleting records, executing trades), the agent pauses and a human co-signs before execution continues.</p>
+    </div>
+  </div>
+
+  <h2>How HITL Works: The Pause/Resume Cycle</h2>
+
+  <div class="hitl-flow">
+    <div class="hitl-step run">
+      <div class="hitl-num">1</div>
+      <div class="hitl-step-body"><strong>Agent runs normally</strong><p>Processing user request, calling tools, building its plan.</p></div>
+    </div>
+    <div class="hitl-step pause">
+      <div class="hitl-num">2</div>
+      <div class="hitl-step-body"><strong>Interrupt raised</strong><p>When the agent is about to call a high-stakes tool, the middleware calls LangGraph's <code>interrupt()</code>. State is saved to the checkpointer. With <code>version="v2"</code> the <code>invoke()</code> call returns a <code>GraphOutput</code> whose <code>.interrupts</code> hold the pending actions.</p></div>
+    </div>
+    <div class="hitl-step review">
+      <div class="hitl-num">3</div>
+      <div class="hitl-step-body"><strong>Human reviews</strong><p>Your app shows the pending action to the reviewer. They inspect the proposed tool call and its arguments.</p></div>
+    </div>
+    <div class="hitl-step resume">
+      <div class="hitl-num">4a</div>
+      <div class="hitl-step-body"><strong>Approved: resume</strong><p>Call <code>agent.invoke(Command(resume={"decisions": [{"type": "approve"}]}), config=config, version="v2")</code> with the same thread_id. The agent picks up exactly where it left off.</p></div>
+    </div>
+    <div class="hitl-step reject">
+      <div class="hitl-num">4b</div>
+      <div class="hitl-step-body"><strong>Rejected / edited / answered</strong><p>Resume with a different decision: <code>reject</code> (with feedback), <code>edit</code> (change the tool args), or <code>respond</code> (return a reply as the tool result). Each decision is an item in the <code>decisions</code> list.</p></div>
+    </div>
+  </div>
+
+  <h2>Using the Prebuilt HumanInTheLoopMiddleware</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">hitl_basic.py</span></div>
+    <pre><code class="language-python">from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+from langchain.agents.middleware import HumanInTheLoopMiddleware
+from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.types import Command
+
+checkpointer = InMemorySaver()
+
+# interrupt_on maps each tool to the decisions a reviewer may make.
+#   True  → pause, all decisions allowed (approve / edit / reject / respond)
+#   {"allowed_decisions": [...]} → pause, restrict which decisions are allowed
+#   False → never pause (safe, auto-approved)
+agent = create_agent(
+    model=init_chat_model("openai:gpt-4o-mini"),
+    tools=[send_email, delete_record, book_flight, web_search],
+    checkpointer=checkpointer,
+    middleware=[
+        HumanInTheLoopMiddleware(
+            interrupt_on={
+                "send_email": True,
+                "delete_record": {"allowed_decisions": ["approve", "reject"]},
+                "book_flight": True,
+                "web_search": False,
+            },
+            description_prefix="Tool execution pending approval",
+        )
+    ],
+    system_prompt="You are an executive assistant.",
+)
+
+config = {"configurable": {"thread_id": "session-001"}}
+
+# ── Step 1: Initial invocation (note version="v2") ─────────────────────────────
+result = agent.invoke(
+    {"messages": [{"role": "user", "content": "Email alice@example.com about the meeting"}]},
+    config=config,
+    version="v2",
+)
+
+# The agent planned to call send_email — but it's paused.
+# result is a GraphOutput; pending actions live in result.interrupts
+print(result.interrupts)
+# → (Interrupt(value={'action_requests': [{'name': 'send_email',
+#     'arguments': {'to': 'alice@example.com', 'subject': 'Meeting', ...}}], ...}),)
+
+# ── Step 2: Approve — resume with a decision keyed to the same thread_id ───────
+approved = agent.invoke(
+    Command(resume={"decisions": [{"type": "approve"}]}),
+    config=config,
+    version="v2",
+)
+
+# ── Step 3: Reject with feedback instead of approving ─────────────────────────
+rejected = agent.invoke(
+    Command(resume={"decisions": [
+        {"type": "reject", "message": "Wrong recipient — ask me first."}
+    ]}),
+    config=config,
+    version="v2",
+)
+
+# ── Edit the arguments before running, or answer an "ask_user" tool ───────────
+edited = agent.invoke(
+    Command(resume={"decisions": [
+        {"type": "edit", "edited_action": {"name": "send_email",
+            "args": {"to": "alice@correct.com", "subject": "Meeting", "body": "..."}}}
+    ]}),
+    config=config,
+    version="v2",
+)</code></pre>
+  </div>
+
+  <h2>Building a Custom Interrupt Pattern</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">custom_hitl.py</span></div>
+    <pre><code class="language-python">from collections.abc import Callable
+from langchain.agents.middleware import AgentMiddleware, wrap_tool_call
+from langchain.tools.tool_node import ToolCallRequest
+from langchain.messages import ToolMessage
+from langgraph.types import interrupt, Command
+
+class ApprovalMiddleware(AgentMiddleware):
+    """
+    Custom HITL: pause for destructive or high-value tool calls.
+    Uses LangGraph's interrupt() primitive — the checkpointer saves state and
+    surfaces the value in result.interrupts. Resume with Command(resume=...).
+    """
+
+    DESTRUCTIVE_TOOLS = {"delete_record", "bulk_delete", "truncate_table", "send_mass_email"}
+    HIGH_VALUE_THRESHOLD = 10_000  # pause payments above this amount
+
+    def wrap_tool_call(self, request: ToolCallRequest,
+                       handler: Callable) -> ToolMessage | Command:
+        name = request.tool_call["name"]
+        args = request.tool_call["args"]
+
+        needs_review = name in self.DESTRUCTIVE_TOOLS or (
+            name == "process_payment" and args.get("amount", 0) > self.HIGH_VALUE_THRESHOLD
+        )
+        if needs_review:
+            # interrupt() pauses the graph and returns whatever the human resumes with
+            decision = interrupt({"tool": name, "args": args,
+                                  "note": "Approval required — review and resume."})
+            if decision.get("type") != "approve":
+                return ToolMessage(
+                    content=f"Rejected by reviewer: {decision.get('message', 'no reason given')}",
+                    tool_call_id=request.tool_call["id"],
+                )
+        return handler(request)  # approved (or no review needed) → run the tool
+
+
+# Wiring up — any persistent checkpointer works across processes
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+
+async with AsyncSqliteSaver.from_conn_string("approvals.db") as checkpointer:
+    agent = create_agent(
+        model=init_chat_model("openai:gpt-4o-mini"),
+        tools=[delete_record, process_payment, web_search],
+        checkpointer=checkpointer,
+        middleware=[ApprovalMiddleware()],
+    )
+
+# Resume an approved call:  agent.invoke(Command(resume={"type": "approve"}),
+#                                        config=config, version="v2")</code></pre>
+  </div>
+
+  <h2>FastAPI Approval Workflow (Async)</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">approval_api.py</span></div>
+    <pre><code class="language-python">from fastapi import FastAPI
+from pydantic import BaseModel
+from langgraph.types import Command
+import uuid
+
+app = FastAPI()
+
+# ── 1. Start a task ────────────────────────────────────────────────────────────
+class ChatRequest(BaseModel):
+    message: str
+    user_id: str
+
+@app.post("/chat")
+async def chat(req: ChatRequest):
+    thread_id = f"{req.user_id}:{uuid.uuid4()}"
+    config = {"configurable": {"thread_id": thread_id}}
+
+    result = await agent.ainvoke(
+        {"messages": [{"role": "user", "content": req.message}]},
+        config=config,
+        version="v2",
+    )
+
+    if result.interrupts:
+        # Save the thread_id so the reviewer can look it up later
+        await save_pending_approval(thread_id, result.interrupts)
+        return {
+            "status": "pending_approval",
+            "thread_id": thread_id,
+            "action": str(result.interrupts),
+        }
+
+    return {"status": "complete", "response": result.value["messages"][-1].content}
+
+
+# ── 2. Approve or reject ───────────────────────────────────────────────────────
+class ApprovalRequest(BaseModel):
+    thread_id: str
+    decision: str  # "approve" or "reject"
+    reviewer_note: str = ""
+
+@app.post("/approve")
+async def approve_action(req: ApprovalRequest):
+    config = {"configurable": {"thread_id": req.thread_id}}
+
+    if req.decision == "approve":
+        decisions = [{"type": "approve"}]
+    else:
+        decisions = [{"type": "reject", "message": req.reviewer_note or "Do not proceed."}]
+
+    # Resume the paused thread with the reviewer's decision
+    result = await agent.ainvoke(
+        Command(resume={"decisions": decisions}),
+        config=config,
+        version="v2",
+    )
+    return {"status": "complete", "response": result.value["messages"][-1].content}
+
+
+# ── 3. Inspect paused state ────────────────────────────────────────────────────
+@app.get("/state/{thread_id}")
+async def get_agent_state(thread_id: str):
+    """Let reviewers inspect full agent state during pause."""
+    config = {"configurable": {"thread_id": thread_id}}
+    state = agent.get_state(config)
+    return {
+        "messages": [m.dict() for m in state.values["messages"]],
+        "next": state.next,  # which node runs after resume
+    }</code></pre>
+  </div>
+
+  <h2>Editing the Action Before It Runs</h2>
+
+  <p>The cleanest way to fix a tool call you don't like is the <code class="inline">edit</code> decision — you change the arguments and the (corrected) tool then executes:</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">edit_before_resume.py</span></div>
+    <pre><code class="language-python">from langgraph.types import Command
+
+config = {"configurable": {"thread_id": "session-001"}}
+
+# Inspect the paused state and the action the agent proposed
+state = agent.get_state(config)
+print("Planned next step:", state.next)
+print("Pending action:", state.interrupts)   # what needs review
+
+# The agent wanted to send to alice@wrong.com — correct the args, then run it
+final = agent.invoke(
+    Command(resume={"decisions": [
+        {"type": "edit", "edited_action": {
+            "name": "send_email",
+            "args": {"to": "alice@correct.com", "subject": "Meeting", "body": "..."},
+        }}
+    ]}),
+    config=config,
+    version="v2",
+)
+print(final.value["messages"][-1].content)</code></pre>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-icon">🔧</div>
+    <div class="callout-content">
+      <strong>Lower-level alternative: <code class="inline">agent.update_state()</code></strong>
+      <p>For graph-level edits beyond a single tool call, you can still write directly to the checkpoint with <code class="inline">agent.update_state(config, {...})</code>, then resume with <code class="inline">Command(resume=...)</code>. Reach for the <code class="inline">edit</code> decision first — <code class="inline">update_state</code> is for advanced cases where you're modifying state the interrupt decisions don't cover.</p>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: InMemorySaver won't survive server restarts</strong>
+      <p>Approval workflows often involve human delays of minutes or hours. If your server restarts while waiting for approval, an <code class="inline">InMemorySaver</code> loses all paused states. Use <code class="inline">AsyncSqliteSaver</code> for development or <code class="inline">PostgresSaver</code> for production. The thread_id is the key — as long as the checkpointer persists, any process can resume any paused agent.</p>
+    </div>
+  </div>
+
+  <div class="use-case">
+    <h4>🏦 Loan Processing Agent</h4>
+    <p>A financial services agent helps loan officers process applications. It runs autonomously — pulling credit data, validating documents, calculating risk scores — but triggers a HITL interrupt before the final <code>approve_loan(application_id, amount)</code> tool call. The loan officer reviews the full state (all documents checked, risk score computed) via a dashboard, then clicks "Approve" or "Reject" with a note. On approve, <code>agent.ainvoke(Command(resume={"decisions": [{"type": "approve"}]}), config, version="v2")</code> executes the loan approval. The entire decision trail is in the checkpointer — a perfect audit log.</p>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>Key Takeaways</strong>
+      <p>HITL requires a persistent checkpointer (SQLite or Postgres in production). Trigger interrupts via <code class="inline">HumanInTheLoopMiddleware(interrupt_on={...})</code> (prebuilt) or the <code class="inline">interrupt()</code> primitive (custom). Always invoke and resume with <code class="inline">version="v2"</code>: pending actions arrive in <code class="inline">result.interrupts</code>. Resume with <code class="inline">Command(resume={"decisions": [{"type": "approve"}]})</code> — or <code class="inline">reject</code>, <code class="inline">edit</code>, <code class="inline">respond</code>. Inspect paused state with <code class="inline">agent.get_state(config)</code>. The thread_id ties everything together across any number of processes.</p>
+    </div>
+  </div>
+
+  <div class="mod-nav">
+    <a href="18-guardrails.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 18: Guardrails</strong></div>
+    </a>
+    <a href="20-multi-agent.html" class="nav-btn next">
+      <div><small>Next up</small><strong>Module 20: Multi-Agent Systems →</strong></div>
+      <span style="font-size:20px">➡</span>
+    </a>
+  </div>
+
+</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

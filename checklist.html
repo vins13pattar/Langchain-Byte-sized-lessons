@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coverage Checklist — LangChain Byte-Sized Lessons</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F0F4F8;--surface:#FFFFFF;--sidebar-bg:#0F172A;--sidebar-w:272px;
+  --accent:#006DDD;--accent-light:#E0F2FE;
+  --text:#1E293B;--muted:#64748B;--border:#E2E8F0;
+  --green:#16A34A;--orange:#EA580C;--purple:#7C3AED;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px;transition:color 0.15s}
+.sidebar-home:hover{color:#94A3B8}
+.sidebar-home.active{color:#7FC8FF}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:920px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent-light);color:#0369A1;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.lead{font-size:1.05rem;color:var(--muted);margin-bottom:28px;max-width:680px}
+h2{font-size:1.2rem;font-weight:800;color:#0F172A;margin:36px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+.summary{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:28px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 22px;flex:1;min-width:130px}
+.stat-num{font-size:1.8rem;font-weight:800;color:var(--accent)}
+.stat-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+.bar{height:10px;border-radius:6px;background:#E2E8F0;overflow:hidden;margin:6px 0 28px}
+.bar > div{height:100%;background:linear-gradient(90deg,#16A34A,#22C55E)}
+table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:8px;font-size:13.5px}
+caption{caption-side:top;text-align:left;font-weight:700;color:#0F172A;padding:8px 0;font-size:14px}
+th{background:#F8FAFC;text-align:left;padding:10px 14px;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);border-bottom:1px solid var(--border)}
+td{padding:10px 14px;border-bottom:1px solid #F1F5F9;vertical-align:top}
+tr:last-child td{border-bottom:none}
+td a{color:var(--accent);font-weight:600}
+td a:hover{text-decoration:underline}
+.done{display:inline-block;background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.partial{display:inline-block;background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.dgm{color:#15803D;font-weight:700}.dgm-no{color:#CBD5E1}
+.note{background:#EFF6FF;border-left:4px solid var(--accent);border-radius:10px;padding:16px 20px;margin:24px 0;font-size:14px;color:#334155}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 16px}table{font-size:12px}td,th{padding:8px}}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">🦜 LangChain Course</div>
+    <div class="sidebar-title">Byte-Sized Lessons</div>
+  </div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home active">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">📋 Source of Truth · Verified vs. live docs June 2026</div>
+  <h1>Documentation Coverage Checklist</h1>
+  <p class="lead">Every page of the official <a href="https://docs.langchain.com/oss/python/langchain/overview" target="_blank" style="color:var(--accent);font-weight:600">LangChain Python docs</a> mapped to a course module. This is the canonical record of completeness — work proceeds in order and no page is skipped silently.</p>
+
+  <div class="summary">
+    <div class="stat"><div class="stat-num">27 / 27</div><div class="stat-label">Doc pages covered</div></div>
+    <div class="stat"><div class="stat-num">32</div><div class="stat-label">Modules</div></div>
+    <div class="stat"><div class="stat-num">32</div><div class="stat-label">Quizzes</div></div>
+    <div class="stat"><div class="stat-num">21</div><div class="stat-label">Diagrams</div></div>
+  </div>
+  <div class="bar"><div style="width:100%"></div></div>
+
+  <div class="note">
+    <strong>How to read this:</strong> ✅ <span class="done">Covered</span> = the doc page's concepts are taught in the linked module. The <strong>Diagram</strong> column shows whether a structural Excalidraw export exists in <code>/diagrams</code> for that topic. APIs were re-verified against the live docs in June 2026 (LangChain v1) — imports use <code>langchain.agents</code>, <code>langchain.chat_models</code>, and <code>langchain.agents.middleware</code>.
+  </div>
+
+  <h2>Part 1 · Get Started</h2>
+  <table>
+    <tr><th>Doc page</th><th>Module</th><th>Status</th><th>Diagram</th></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/overview" target="_blank">Overview</a></td><td><a href="01-what-is-langchain.html">01 · What is LangChain?</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/install" target="_blank">Install</a></td><td><a href="02-first-agent.html">02 · Your First Agent</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/quickstart" target="_blank">Quickstart</a></td><td><a href="02-first-agent.html">02 · Your First Agent</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/philosophy" target="_blank">Philosophy</a></td><td><a href="01-what-is-langchain.html">01 · What is LangChain?</a></td><td><span class="done">Covered</span></td><td class="dgm-no">—</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/releases/changelog" target="_blank">Changelog / v1 migration</a></td><td><a href="faq.html">FAQ · v0 → v1</a></td><td><span class="done">Covered</span></td><td class="dgm-no">—</td></tr>
+  </table>
+
+  <h2>Part 2 · Core Components</h2>
+  <table>
+    <tr><th>Doc page</th><th>Module</th><th>Status</th><th>Diagram</th></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/agents" target="_blank">Agents</a></td><td><a href="07-agents-deep-dive.html">07 · Agents Deep Dive</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/models" target="_blank">Models</a></td><td><a href="03-chat-models.html">03 · Chat Models</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/messages" target="_blank">Messages</a></td><td><a href="04-messages.html">04 · Messages</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/tools" target="_blank">Tools</a></td><td><a href="05-tools-creating.html">05</a> · <a href="06-tools-advanced.html">06 · Tools</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/short-term-memory" target="_blank">Short-term memory</a></td><td><a href="09-short-term-memory.html">09 · Short-Term Memory</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/streaming" target="_blank">Streaming</a></td><td><a href="10-streaming.html">10</a> · <a href="11-event-streaming.html">11 · Streaming</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/structured-output" target="_blank">Structured output</a></td><td><a href="08-structured-output.html">08 · Structured Output</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+  </table>
+
+  <h2>Part 3 · Middleware</h2>
+  <table>
+    <tr><th>Doc page</th><th>Module</th><th>Status</th><th>Diagram</th></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/middleware/overview" target="_blank">Middleware overview</a></td><td><a href="13-middleware-overview.html">13 · Middleware Overview</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/middleware/built-in" target="_blank">Prebuilt middleware</a></td><td><a href="14-prebuilt-middleware.html">14 · Prebuilt Middleware</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/middleware/custom" target="_blank">Custom middleware</a></td><td><a href="15-custom-middleware.html">15 · Custom Middleware</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+  </table>
+
+  <h2>Part 4 · Advanced Usage</h2>
+  <table>
+    <tr><th>Doc page</th><th>Module</th><th>Status</th><th>Diagram</th></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/guardrails" target="_blank">Guardrails</a></td><td><a href="18-guardrails.html">18 · Guardrails</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/runtime" target="_blank">Runtime</a></td><td><a href="17-runtime-context.html">17 · Runtime &amp; Context</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/context-engineering" target="_blank">Context engineering</a></td><td><a href="16-context-engineering.html">16 · Context Engineering</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/mcp" target="_blank">Model Context Protocol (MCP)</a></td><td><a href="21-mcp.html">21 · MCP</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/human-in-the-loop" target="_blank">Human-in-the-loop</a></td><td><a href="19-human-in-the-loop.html">19 · Human-in-the-Loop</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/multi-agent" target="_blank">Multi-agent</a></td><td><a href="20-multi-agent.html">20 · Multi-Agent Systems</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/retrieval" target="_blank">Retrieval</a></td><td><a href="22-rag-fundamentals.html">22</a> · <a href="23-2step-rag.html">23</a> · <a href="24-agentic-rag.html">24 · RAG</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/long-term-memory" target="_blank">Long-term memory</a></td><td><a href="12-long-term-memory.html">12 · Long-Term Memory</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+  </table>
+
+  <h2>Part 5 · Frontend</h2>
+  <table>
+    <tr><th>Doc page</th><th>Module</th><th>Status</th><th>Diagram</th></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/frontend/overview" target="_blank">Frontend overview</a></td><td><a href="25-frontend-architecture.html">25 · Frontend Architecture</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/frontend/overview" target="_blank">Frontend patterns</a></td><td><a href="26-rendering-patterns.html">26</a> · <a href="27-interaction-patterns.html">27 · Patterns</a></td><td><span class="done">Covered</span></td><td class="dgm-no">—</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/frontend/overview" target="_blank">Frontend integrations</a></td><td><a href="28-advanced-frontend.html">28 · Advanced Frontend</a></td><td><span class="done">Covered</span></td><td class="dgm-no">—</td></tr>
+  </table>
+
+  <h2>Part 6 · Agent Development &amp; Deploy</h2>
+  <table>
+    <tr><th>Doc page</th><th>Module</th><th>Status</th><th>Diagram</th></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/studio" target="_blank">LangSmith Studio</a></td><td><a href="29-langsmith-studio.html">29 · LangSmith Studio</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/test" target="_blank">Test</a></td><td><a href="30-testing-agents.html">30 · Testing Agents</a></td><td><span class="done">Covered</span></td><td class="dgm-no">—</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/ui" target="_blank">Agent Chat UI</a></td><td><a href="31-agent-chat-ui.html">31 · Agent Chat UI</a></td><td><span class="done">Covered</span></td><td class="dgm-no">—</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/deploy" target="_blank">Deployment</a></td><td><a href="32-deployment-observability.html">32 · Deploy &amp; Observe</a></td><td><span class="done">Covered</span></td><td class="dgm">✓</td></tr>
+    <tr><td><a href="https://docs.langchain.com/oss/python/langchain/observability" target="_blank">Observability</a></td><td><a href="32-deployment-observability.html">32 · Deploy &amp; Observe</a></td><td><span class="done">Covered</span></td><td class="dgm-no">—</td></tr>
+  </table>
+
+  <div class="note" style="border-left-color:var(--purple);background:#F5F3FF">
+    <strong>Adjacent frameworks (referenced, not full modules):</strong> Deep Agents and LangGraph are introduced where relevant (Modules 01, 07, 19, 20) but are separate doc trees with their own coverage. They are intentionally out of scope for this LangChain core course and noted here for transparency.
+  </div>
+
+</div>
+</main>
+</body>
+</html>

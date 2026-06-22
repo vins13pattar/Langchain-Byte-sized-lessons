@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 16: Context Engineering — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F0F4F8;--surface:#FFF;--sidebar-bg:#0F172A;--sidebar-w:272px;--accent:#006DDD;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--green:#16A34A;--orange:#EA580C;--purple:#7C3AED;--indigo:#4338CA}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:#EEF2FF;color:#3730A3;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:1px solid #C7D2FE;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#3730A3;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+h3{font-size:1.05rem;font-weight:700;color:#1E293B;margin:28px 0 10px}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#EFF6FF;border-left:4px solid var(--accent)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+
+/* context window diagram */
+.ctx-window{background:#0F172A;border-radius:12px;padding:20px;margin:28px 0;font-family:monospace;font-size:13px}
+.ctx-section{border-radius:6px;padding:10px 14px;margin-bottom:8px}
+.ctx-section:last-child{margin-bottom:0}
+.ctx-section .cslabel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.ctx-section .csval{font-size:12px}
+.ctx-system{background:#1E3A5F;border-left:3px solid #3B82F6}
+.ctx-system .cslabel{color:#60A5FA}
+.ctx-system .csval{color:#BAE6FD}
+.ctx-memory{background:#1A3327;border-left:3px solid #10B981}
+.ctx-memory .cslabel{color:#34D399}
+.ctx-memory .csval{color:#A7F3D0}
+.ctx-history{background:#2D1F3D;border-left:3px solid #8B5CF6}
+.ctx-history .cslabel{color:#A78BFA}
+.ctx-history .csval{color:#DDD6FE}
+.ctx-user{background:#1F2937;border-left:3px solid #6B7280}
+.ctx-user .cslabel{color:#9CA3AF}
+.ctx-user .csval{color:#E5E7EB}
+
+.use-case{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #BAE6FD}
+.use-case h4{color:#1E40AF;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn.next{justify-content:flex-end;text-align:right}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="sidebar-brand">🦜 LangChain Course</div><div class="sidebar-title">Byte-Sized Lessons</div></div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="16-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 16 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link active"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 5 · Module 16 · Advanced Patterns</div>
+  <h1>Context Engineering</h1>
+  <div class="mod-meta">
+    <span>⏱ ~22 min</span><span>💻 Runnable code</span><span>🧠 Context window design</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll learn:</strong> How to deliberately design the model's context window — what goes in, in what order, and how much. Practical patterns for system prompts, injecting memory, message trimming, and the few-shot technique to steer model behavior.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px 22px;margin:28px 0">
+    <div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">📐 Structural overview — Context engineering</div>
+    <img src="diagrams/16-context-engineering.svg" alt="Context engineering diagram" loading="lazy" style="width:100%;height:auto;display:block;border:1px solid #F1F5F9;border-radius:8px;background:#fff">
+    <p style="font-size:12.5px;color:#64748B;margin:12px 0 0">
+      <a href="diagrams/16-context-engineering.svg" target="_blank" style="color:#006DDD;font-weight:600;text-decoration:none">↗ Open full size</a>
+      &nbsp;&middot;&nbsp;
+      <a href="diagrams/16-context-engineering.excalidraw" download style="color:#006DDD;font-weight:600;text-decoration:none">⬇ Edit in Excalidraw</a>
+      &nbsp;— labels use real LangChain classes.
+    </p>
+  </div>
+
+
+  <div class="callout analogy">
+    <div class="callout-icon">🎬</div>
+    <div class="callout-content">
+      <strong>Analogy: the briefing packet</strong>
+      <p>A model processes everything in its context window like a consultant reading a briefing packet before a meeting. Context engineering is writing that packet deliberately — what goes on page 1 (system prompt), what's the background (memory facts), what's the recent history, and what's the actual question (current message). A poorly assembled packet leads to confused advice. A well-assembled one leads to razor-sharp answers.</p>
+    </div>
+  </div>
+
+  <h2>What Is the Context Window?</h2>
+  <p>Every model call sends a list of messages. The model only "knows" what's in that list — nothing else. Context engineering is the practice of deliberately assembling that list to maximize the quality of the model's response.</p>
+
+  <div class="ctx-window">
+    <div class="ctx-section ctx-system">
+      <div class="cslabel">① System Prompt (always first)</div>
+      <div class="csval">"You are a financial advisor. Be concise. Use metric units..."</div>
+    </div>
+    <div class="ctx-section ctx-memory">
+      <div class="cslabel">② Injected Memory / Facts (from store)</div>
+      <div class="csval">"User context: Alice, portfolio risk = conservative, tax bracket = 32%..."</div>
+    </div>
+    <div class="ctx-section ctx-history">
+      <div class="cslabel">③ Conversation History (from checkpointer)</div>
+      <div class="csval">[HumanMessage, AIMessage, HumanMessage, AIMessage...] (last N turns)</div>
+    </div>
+    <div class="ctx-section ctx-user">
+      <div class="cslabel">④ Current User Message</div>
+      <div class="csval">"Should I move more into bonds given the current rate environment?"</div>
+    </div>
+  </div>
+
+  <h2>Pattern 1: Dynamic System Prompts</h2>
+  <p>Static system prompts can't adapt to the user or session. Use <code class="inline">@dynamic_prompt</code> middleware to build the system prompt from live data each turn.</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">dynamic_system_prompt.py</span></div>
+    <pre><code class="language-python">from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+from langchain.agents.middleware import AgentMiddleware
+from langchain.agents.middleware import dynamic_prompt
+from langgraph.store.memory import InMemoryStore
+from datetime import datetime
+
+class ContextEngineeringMiddleware(AgentMiddleware):
+
+    @dynamic_prompt
+    async def build_system_prompt(self, state, context) -> str:
+        user_id = context.get("user_id", "anonymous")
+
+        # ── Pull from long-term store ──────────────────────────────────────────
+        profile_item = await self._store.aget(
+            namespace=("users", user_id), key="profile"
+        )
+        profile = profile_item.value if profile_item else {}
+
+        # ── Pull recent facts ──────────────────────────────────────────────────
+        fact_items = await self._store.asearch(namespace=("facts", user_id))
+        facts = [item.value.get("fact", "") for item in fact_items[:5]]  # top 5
+
+        # ── Build structured system prompt ─────────────────────────────────────
+        name = profile.get("name", "the user")
+        lang = profile.get("preferred_language", "English")
+        now = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+
+        sections = [
+            f"You are a personal AI assistant.",
+            f"Current date/time: {now}",
+            f"Respond in: {lang}",
+        ]
+
+        if profile:
+            sections.append(f"You are helping: {name}")
+
+        if facts:
+            sections.append("What you remember about this user:")
+            for f in facts:
+                sections.append(f"  - {f}")
+
+        sections.append("Be concise and helpful. If you don't know something, say so.")
+        return "\n".join(sections)
+
+store = InMemoryStore()
+# Pre-populate some user data
+store.put(("users", "alice"), "profile", {"name": "Alice", "preferred_language": "English"})
+store.put(("facts", "alice"), "city", {"fact": "lives in Paris"})
+store.put(("facts", "alice"), "job", {"fact": "works as a UX designer"})
+
+agent = create_agent(
+    model=init_chat_model("openai:gpt-4o-mini"),
+    tools=[],
+    store=store,
+    middleware=[ContextEngineeringMiddleware()],
+)</code></pre>
+  </div>
+
+  <h2>Pattern 2: Message Trimming</h2>
+  <p>Long conversations overflow the context window. <code class="inline">trim_messages()</code> keeps the most recent and most relevant messages while staying within token limits.</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">message_trimming.py</span></div>
+    <pre><code class="language-python">from langchain_core.messages import trim_messages, SystemMessage, HumanMessage, AIMessage
+
+# ── Basic trimming — keep last N tokens ───────────────────────────────────────
+messages = [
+    SystemMessage("You are helpful."),
+    HumanMessage("Hello"),
+    AIMessage("Hi there!"),
+    # ... many more messages ...
+    HumanMessage("What did I say earlier about Python?"),
+]
+
+trimmed = trim_messages(
+    messages,
+    max_tokens=4000,          # stay within this limit
+    token_counter=len,        # use your model's tokenizer here
+    strategy="last",          # keep the LAST N tokens (most recent messages)
+    start_on="human",         # always start with a HumanMessage (model constraint)
+    include_system=True,      # always keep the SystemMessage (even if old)
+    allow_partial=False,      # never split a message mid-way
+)
+
+# ── Filter messages by type ────────────────────────────────────────────────────
+from langchain_core.messages import filter_messages, ToolMessage
+
+# Remove all tool messages from history (reduce noise for summarization)
+clean_messages = filter_messages(
+    messages,
+    exclude_types=[ToolMessage],
+)
+
+# Keep only the last 3 human/AI turns (no tool messages)
+from langchain_core.messages import filter_messages
+recent = filter_messages(messages, include_types=["human", "ai"])[-6:]  # 3 turns × 2
+
+# ── Use trimming in a before_model middleware hook ─────────────────────────────
+from langchain.agents.middleware import AgentMiddleware
+from langchain.agents.middleware import before_model
+
+class TrimMiddleware(AgentMiddleware):
+    def __init__(self, max_tokens: int = 6000):
+        self.max_tokens = max_tokens
+
+    @before_model
+    def trim_context(self, messages):
+        return trim_messages(
+            messages,
+            max_tokens=self.max_tokens,
+            token_counter=len,  # replace with tiktoken for accuracy
+            strategy="last",
+            start_on="human",
+            include_system=True,
+        )</code></pre>
+  </div>
+
+  <h2>Pattern 3: Few-Shot Examples</h2>
+  <p>Few-shot prompting gives the model 2–5 input/output examples to steer its style, format, and reasoning. It's one of the most reliable ways to get consistent output.</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">few_shot.py</span></div>
+    <pre><code class="language-python">from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+
+# ── Build few-shot examples as message pairs ───────────────────────────────────
+FEW_SHOT_EXAMPLES = [
+    HumanMessage("Classify: 'My order never arrived and support ignored me!'"),
+    AIMessage('{"category": "shipping", "sentiment": "negative", "urgency": "high", "summary": "Customer had a delivery failure and poor support experience."}'),
+
+    HumanMessage("Classify: 'Just checking my order status, thanks!'"),
+    AIMessage('{"category": "order_status", "sentiment": "neutral", "urgency": "low", "summary": "Routine order inquiry."}'),
+
+    HumanMessage("Classify: 'I love your product! Can I order more?'"),
+    AIMessage('{"category": "reorder", "sentiment": "positive", "urgency": "low", "summary": "Satisfied customer wants to purchase again."}'),
+]
+
+# ── Inject examples into the conversation using before_model middleware ─────────
+from langchain.agents.middleware import AgentMiddleware
+from langchain.agents.middleware import before_model
+
+class FewShotMiddleware(AgentMiddleware):
+    """Injects few-shot examples after the system message."""
+
+    def __init__(self, examples: list):
+        self.examples = examples
+
+    @before_model
+    def inject_examples(self, messages):
+        # Find the system message
+        system_msgs = [m for m in messages if m.type == "system"]
+        other_msgs = [m for m in messages if m.type != "system"]
+
+        # Rebuild: system → examples → actual conversation
+        return system_msgs + self.examples + other_msgs
+
+agent = create_agent(
+    model=init_chat_model("openai:gpt-4o-mini", temperature=0),
+    tools=[],
+    system_prompt=(
+        "You are a customer support classifier. "
+        "Always respond with valid JSON matching: "
+        "{category, sentiment, urgency, summary}. "
+        "No other text."
+    ),
+    middleware=[FewShotMiddleware(FEW_SHOT_EXAMPLES)],
+)
+
+result = agent.invoke({
+    "messages": [HumanMessage("Classify: 'When will my refund be processed?'")]
+})
+print(result["messages"][-1].content)
+# {"category": "refund", "sentiment": "neutral", "urgency": "medium", "summary": "..."}</code></pre>
+  </div>
+
+  <h2>Pattern 4: Injecting RAG Results into Context</h2>
+  <p>Retrieved documents should be inserted at the right point in the context — after the system prompt but before conversation history — so the model reads them as background knowledge, not as part of the chat.</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">rag_context_injection.py</span></div>
+    <pre><code class="language-python">from langchain_core.messages import SystemMessage, HumanMessage
+from langchain.agents.middleware import AgentMiddleware
+from langchain.agents.middleware import before_model
+
+class RAGInjectionMiddleware(AgentMiddleware):
+    """Retrieves relevant docs and injects them as context before the model call."""
+
+    def __init__(self, retriever):
+        self.retriever = retriever
+
+    @before_model
+    async def inject_documents(self, messages):
+        # Get the latest human message as the query
+        human_msgs = [m for m in messages if m.type == "human"]
+        if not human_msgs:
+            return messages
+
+        query = human_msgs[-1].content
+        docs = await self.retriever.ainvoke(query)
+
+        if not docs:
+            return messages
+
+        # Format docs as a context block
+        context_text = "\n\n".join(
+            f"[Document {i+1}]\n{doc.page_content}"
+            for i, doc in enumerate(docs[:3])  # top 3 docs
+        )
+        context_msg = SystemMessage(
+            f"Relevant context (use this to answer the user):\n\n{context_text}\n\n"
+            f"--- End of context ---"
+        )
+
+        # Insert after the main system message, before conversation history
+        sys_msgs = [m for m in messages if m.type == "system"]
+        other_msgs = [m for m in messages if m.type != "system"]
+        return sys_msgs + [context_msg] + other_msgs</code></pre>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: the "lost in the middle" problem</strong>
+      <p>Research shows models pay less attention to information placed in the <em>middle</em> of a long context. The most reliably attended positions are the beginning (system prompt) and the end (the current message). Put critical instructions in the system prompt, not buried mid-conversation. When injecting documents, put the most relevant one first and consider repeating the key instruction at the end: "Based on the documents above, answer: [user question]."</p>
+    </div>
+  </div>
+
+  <h2>Real-World Use Case</h2>
+  <div class="use-case">
+    <h4>⚖️ Legal Research Assistant</h4>
+    <p>A legal research agent uses four context layers: (1) a system prompt specifying jurisdiction and practice area; (2) a fact-injected section with the current case's key parties and claims (from the store); (3) retrieved case law snippets from a vector database (injected by RAGInjectionMiddleware); (4) the lawyer's current question. Each layer is carefully ordered. Case law goes between the system prompt and conversation history so it reads as authoritative background, not as conversational turn-taking. Few-shot examples teach the model the firm's citation style ("See Smith v. Jones, 2019 WL 12345 (S.D.N.Y.)") without requiring a fine-tuned model.</p>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>Key Takeaways</strong>
+      <p>Context window = system prompt + injected memory + conversation history + current message. Use <code class="inline">@dynamic_prompt</code> to build the system prompt from live data. Use <code class="inline">trim_messages()</code> to stay within token limits. Few-shot examples steer output format reliably. Inject RAG results between system prompt and history. Critical information goes at the beginning or end — not buried in the middle.</p>
+    </div>
+  </div>
+
+  <div class="mod-nav">
+    <a href="15-custom-middleware.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 15: Custom Middleware</strong></div>
+    </a>
+    <a href="17-runtime-context.html" class="nav-btn next">
+      <div><small>Next up</small><strong>Module 17: Runtime &amp; Context →</strong></div>
+      <span style="font-size:20px">➡</span>
+    </a>
+  </div>
+
+</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

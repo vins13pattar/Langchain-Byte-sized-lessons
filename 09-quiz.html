@@ -1,0 +1,131 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Module 09 Quiz — Short-Term Memory | LangChain Course</title><style>:root{--bg:#0f1117;--sidebar:#161b27;--card:#1a2030;--border:#2a3441;--accent:#6366f1;--accent2:#8b5cf6;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;--text:#e2e8f0;--muted:#9ca3af}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;line-height:1.6}
+.sidebar{width:260px;background:var(--sidebar);border-right:1px solid var(--border);padding:20px 0;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;flex-shrink:0}
+.sidebar-header{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.sidebar-header h2{font-size:16px;font-weight:700;color:#fff}
+.badge{background:var(--accent);color:#fff;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;display:inline-block;margin-top:4px}
+.nav-list{list-style:none;padding:0 8px}
+.nav-list li a{display:block;padding:7px 12px;border-radius:6px;color:var(--muted);text-decoration:none;font-size:13px;transition:all 0.15s}
+.nav-list li a:hover{background:rgba(99,102,241,0.1);color:var(--text)}
+.nav-list li.active a{background:rgba(99,102,241,0.15);color:var(--accent);font-weight:600}
+.sidebar-footer{padding:16px 20px 8px;border-top:1px solid var(--border);margin-top:12px}
+.index-link{display:block;color:var(--muted);font-size:12px;text-decoration:none;padding:4px 0}
+.index-link:hover{color:var(--accent)}
+.main{margin-left:260px;flex:1;padding:40px;max-width:860px}
+.quiz-header{margin-bottom:32px}
+.quiz-header .back-link{color:var(--muted);text-decoration:none;font-size:13px;display:inline-flex;align-items:center;gap:6px;margin-bottom:16px}
+.quiz-header .back-link:hover{color:var(--accent)}
+.quiz-header h1{font-size:28px;font-weight:800;margin-bottom:8px}
+.quiz-header p{color:var(--muted);font-size:15px}
+.progress-bar-wrap{background:var(--border);border-radius:6px;height:6px;margin:16px 0 0;overflow:hidden}
+.progress-bar-inner{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:6px;transition:width 0.4s}
+.section-title{font-size:18px;font-weight:700;margin:32px 0 16px;display:flex;align-items:center;gap:8px}
+.section-title .icon{font-size:20px}
+.mcq-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px;transition:border-color 0.2s}
+.mcq-card.correct{border-color:var(--green)}.mcq-card.wrong{border-color:var(--red)}
+.mcq-q{font-size:15px;font-weight:600;margin-bottom:16px;line-height:1.5}
+.mcq-opts{display:flex;flex-direction:column;gap:8px}
+.mcq-opt{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 16px;cursor:pointer;font-size:14px;text-align:left;color:var(--text);transition:all 0.15s;display:flex;align-items:center;gap:10px}
+.mcq-opt:hover:not(:disabled){background:rgba(99,102,241,0.1);border-color:var(--accent)}
+.mcq-opt.selected-correct{background:rgba(16,185,129,0.12);border-color:var(--green);color:#6ee7b7}
+.mcq-opt.selected-wrong{background:rgba(239,68,68,0.12);border-color:var(--red);color:#fca5a5}
+.mcq-opt.reveal-correct{background:rgba(16,185,129,0.08);border-color:var(--green);color:#6ee7b7}
+.mcq-opt:disabled{cursor:not-allowed}
+.opt-indicator{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.selected-correct .opt-indicator,.reveal-correct .opt-indicator{border-color:var(--green);background:var(--green);color:#000}
+.selected-wrong .opt-indicator{border-color:var(--red);background:var(--red);color:#fff}
+.explanation{margin-top:12px;padding:12px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:13px;color:var(--muted);border-left:3px solid var(--accent);display:none}
+.explanation.show{display:block}
+.score-banner{display:none;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin:32px 0;text-align:center}
+.score-banner.show{display:block}
+.score-banner .big-score{font-size:48px;font-weight:900;margin-bottom:8px}
+.score-banner .pass{color:var(--green)}.score-banner .fail{color:var(--red)}
+.score-banner p{color:var(--muted);font-size:15px}
+.score-banner .next-btn{display:inline-block;margin-top:16px;background:var(--accent);color:#fff;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px}
+.iq-card{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.iq-question{padding:18px 20px;cursor:pointer;font-size:14px;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.iq-question:hover{background:rgba(99,102,241,0.07)}
+.iq-chevron{color:var(--muted);transition:transform 0.2s;flex-shrink:0}
+.iq-card.open .iq-chevron{transform:rotate(180deg)}
+.iq-answer{max-height:0;overflow:hidden;transition:max-height 0.3s ease}
+.iq-card.open .iq-answer{max-height:600px}
+.iq-answer-inner{padding:0 20px 18px;color:var(--muted);font-size:14px;line-height:1.7;border-top:1px solid var(--border)}
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0;padding:20px}}</style></head><body>
+<nav class="sidebar">
+      <div class="sidebar-header">
+        <h2>LangChain Course</h2>
+        <span class="badge">Quizzes</span>
+      </div>
+      <ul class="nav-list">
+        <li><a href="01-quiz.html">Module 01</a></li>
+<li><a href="02-quiz.html">Module 02</a></li>
+<li><a href="03-quiz.html">Module 03</a></li>
+<li><a href="04-quiz.html">Module 04</a></li>
+<li><a href="05-quiz.html">Module 05</a></li>
+<li><a href="06-quiz.html">Module 06</a></li>
+<li><a href="07-quiz.html">Module 07</a></li>
+<li><a href="08-quiz.html">Module 08</a></li>
+<li class="active"><a href="09-quiz.html">Module 09</a></li>
+<li><a href="10-quiz.html">Module 10</a></li>
+<li><a href="11-quiz.html">Module 11</a></li>
+<li><a href="12-quiz.html">Module 12</a></li>
+<li><a href="13-quiz.html">Module 13</a></li>
+<li><a href="14-quiz.html">Module 14</a></li>
+<li><a href="15-quiz.html">Module 15</a></li>
+<li><a href="16-quiz.html">Module 16</a></li>
+<li><a href="17-quiz.html">Module 17</a></li>
+<li><a href="18-quiz.html">Module 18</a></li>
+<li><a href="19-quiz.html">Module 19</a></li>
+<li><a href="20-quiz.html">Module 20</a></li>
+<li><a href="21-quiz.html">Module 21</a></li>
+<li><a href="22-quiz.html">Module 22</a></li>
+<li><a href="23-quiz.html">Module 23</a></li>
+<li><a href="24-quiz.html">Module 24</a></li>
+<li><a href="25-quiz.html">Module 25</a></li>
+<li><a href="26-quiz.html">Module 26</a></li>
+<li><a href="27-quiz.html">Module 27</a></li>
+<li><a href="28-quiz.html">Module 28</a></li>
+<li><a href="29-quiz.html">Module 29</a></li>
+<li><a href="30-quiz.html">Module 30</a></li>
+<li><a href="31-quiz.html">Module 31</a></li>
+<li><a href="32-quiz.html">Module 32</a></li>
+
+      </ul>
+      <div class="sidebar-footer">
+        <a href="faq.html" class="index-link">❓ FAQ</a><a href="checklist.html" class="index-link">📋 Checklist</a><a href="quiz-index.html" class="index-link">📊 Quiz Progress</a>
+        <a href="index.html" class="index-link">📚 Course Index</a>
+      </div>
+    </nav>
+<main class="main"><div class="quiz-header"><a href="index.html" class="back-link">← Course Index</a><h1>Module 09 Quiz</h1><p>Short-Term Memory</p><div class="progress-bar-wrap"><div class="progress-bar-inner" id="progress-bar" style="width:0%"></div></div></div>
+<div class="section-title"><span class="icon">🧠</span> Multiple Choice (5 questions · pass = 4/5)</div>
+<div class="mcq-card"><p class="mcq-q">Q1. What enables short-term memory in a LangChain agent?</p><div class="mcq-opts" data-correct="1"><button class="mcq-opt"><span class="opt-indicator"></span>Setting memory=True in create_agent()</button><button class="mcq-opt"><span class="opt-indicator"></span>Attaching a checkpointer and using thread_id</button><button class="mcq-opt"><span class="opt-indicator"></span>Storing state in a global variable</button><button class="mcq-opt"><span class="opt-indicator"></span>Using ConversationBufferMemory</button></div><div class="explanation">A checkpointer (InMemorySaver, AsyncSqliteSaver, AsyncPostgresSaver) combined with a thread_id in config persists and loads conversation state automatically.</div></div><div class="mcq-card"><p class="mcq-q">Q2. Which checkpointer should you use in production?</p><div class="mcq-opts" data-correct="2"><button class="mcq-opt"><span class="opt-indicator"></span>InMemorySaver</button><button class="mcq-opt"><span class="opt-indicator"></span>FileSaver</button><button class="mcq-opt"><span class="opt-indicator"></span>AsyncPostgresSaver</button><button class="mcq-opt"><span class="opt-indicator"></span>DictSaver</button></div><div class="explanation">InMemorySaver is lost on restart. AsyncPostgresSaver persists state to a database — essential for multi-user, multi-process production deployments.</div></div><div class="mcq-card"><p class="mcq-q">Q3. What happens if two requests share the same thread_id?</p><div class="mcq-opts" data-correct="1"><button class="mcq-opt"><span class="opt-indicator"></span>They run in parallel</button><button class="mcq-opt"><span class="opt-indicator"></span>They share conversation history as if in the same session</button><button class="mcq-opt"><span class="opt-indicator"></span>An error is raised</button><button class="mcq-opt"><span class="opt-indicator"></span>The second request overwrites the first</button></div><div class="explanation">thread_id identifies a conversation. Two requests with the same thread_id see each other's messages — intentional for multi-turn chat, a bug if accidental.</div></div><div class="mcq-card"><p class="mcq-q">Q4. How does trim_messages() decide which messages to keep?</p><div class="mcq-opts" data-correct="1"><button class="mcq-opt"><span class="opt-indicator"></span>Alphabetically</button><button class="mcq-opt"><span class="opt-indicator"></span>It keeps the most recent messages that fit within the token limit, always keeping the system message</button><button class="mcq-opt"><span class="opt-indicator"></span>Randomly</button><button class="mcq-opt"><span class="opt-indicator"></span>By timestamp</button></div><div class="explanation">trim_messages(strategy='last', keep_system=True) preserves the system message + most recent messages up to max_tokens, dropping older turns.</div></div><div class="mcq-card"><p class="mcq-q">Q5. Where is memory state stored with AsyncSqliteSaver?</p><div class="mcq-opts" data-correct="1"><button class="mcq-opt"><span class="opt-indicator"></span>In the LLM's context</button><button class="mcq-opt"><span class="opt-indicator"></span>In a SQLite database file on disk</button><button class="mcq-opt"><span class="opt-indicator"></span>In Redis</button><button class="mcq-opt"><span class="opt-indicator"></span>In environment variables</button></div><div class="explanation">AsyncSqliteSaver stores checkpoints in a local SQLite .db file — good for single-server deployments. For distributed, use AsyncPostgresSaver.</div></div>
+<div class="score-banner" id="score-banner" data-key="lc_quiz_09"><div class="big-score pass">-</div><p class="score-msg"></p><a href="10-quiz.html" class="next-btn">Next Quiz →</a></div>
+<div class="section-title"><span class="icon">🎤</span> Interview Questions</div>
+<div class="iq-card"><div class="iq-question">What is the difference between short-term memory (checkpointer) and long-term memory (vector store)?<span class="iq-chevron">▼</span></div><div class="iq-answer"><div class="iq-answer-inner">Short-term memory is the conversation's message history for the current and previous turns — it's tied to a thread_id and loaded from the checkpointer on each request. Long-term memory is semantic storage across many conversations — facts, preferences, user history stored in a vector database and retrieved by similarity search. Short-term is automatic via the checkpointer; long-term requires explicit retrieval logic.</div></div></div><div class="iq-card"><div class="iq-question">How would you implement conversation branching (e.g., forking a conversation for A/B testing)?<span class="iq-chevron">▼</span></div><div class="iq-answer"><div class="iq-answer-inner">Each branch gets a unique thread_id derived from the parent — e.g., 'thread_abc_branch_a' and 'thread_abc_branch_b'. Copy the parent's checkpoint to both branch thread_ids using agent.update_state() or direct DB copy. Each branch evolves independently. To merge, create a new thread and manually construct a merged message history.</div></div></div><div class="iq-card"><div class="iq-question">What problems arise if you don't implement message trimming in production?<span class="iq-chevron">▼</span></div><div class="iq-answer"><div class="iq-answer-inner">Without trimming: (1) context window overflow — the conversation eventually exceeds the model's max tokens, causing errors. (2) Increasing latency — larger contexts take longer to process and cost more. (3) Lost-in-the-middle — models perform worse when buried in thousands of tokens of old conversation. Always implement trimming or summarization for conversations expected to run longer than ~20 turns.</div></div></div>
+</main><script>const PASS_THRESHOLD=4;let answered=0,correct=0;const total=document.querySelectorAll('.mcq-card').length;
+document.querySelectorAll('.mcq-opts').forEach(opts=>{
+  opts.querySelectorAll('.mcq-opt').forEach((btn,i)=>{
+    btn.addEventListener('click',()=>{
+      if(opts.dataset.answered)return;
+      opts.dataset.answered='1';
+      const correctIdx=parseInt(opts.dataset.correct);
+      const card=opts.closest('.mcq-card');
+      const exp=card.querySelector('.explanation');
+      opts.querySelectorAll('.mcq-opt').forEach((b,j)=>{
+        b.disabled=true;
+        const ind=b.querySelector('.opt-indicator');
+        if(j===correctIdx){b.classList.add('reveal-correct');ind.textContent='✓';}
+      });
+      const ind=btn.querySelector('.opt-indicator');
+      if(i===correctIdx){btn.classList.add('selected-correct');ind.textContent='✓';correct++;card.classList.add('correct');}
+      else{btn.classList.add('selected-wrong');ind.textContent='✗';card.classList.add('wrong');}
+      if(exp)exp.classList.add('show');
+      answered++;
+      document.getElementById('progress-bar').style.width=(answered/total*100)+'%';
+      if(answered===total)showScore();
+    });
+  });
+});
+document.querySelectorAll('.iq-card').forEach(c=>c.querySelector('.iq-question').addEventListener('click',()=>c.classList.toggle('open')));
+function showScore(){const b=document.getElementById('score-banner');const big=b.querySelector('.big-score');const msg=b.querySelector('.score-msg');const passed=correct>=PASS_THRESHOLD;big.textContent=correct+'/'+total;big.className='big-score '+(passed?'pass':'fail');msg.textContent=passed?'🎉 Passed! Great work.':'📚 Keep studying — aim for 4/5 to pass.';b.classList.add('show');const key=b.dataset.key;try{localStorage.setItem(key,JSON.stringify({score:correct,total:total,passed:passed,completedAt:new Date().toISOString()}));}catch(e){}}</script></body></html>

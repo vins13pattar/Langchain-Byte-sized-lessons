@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 10: Streaming — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F0F4F8;--surface:#FFF;--sidebar-bg:#0F172A;--sidebar-w:272px;--accent:#006DDD;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--green:#16A34A;--orange:#EA580C;--purple:#7C3AED}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:#ECFDF5;color:#047857;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#ECFDF5,#D1FAE5);border:1px solid #A7F3D0;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#065F46;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+h3{font-size:1.05rem;font-weight:700;color:#1E293B;margin:28px 0 10px}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#EFF6FF;border-left:4px solid var(--accent)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+
+/* stream mode cards */
+.mode-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:24px 0}
+.mode-card{background:#fff;border:2px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:all 0.2s;position:relative}
+.mode-card:hover,.mode-card.active{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.12)}
+.mode-card.active::after{content:'';position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:20px;height:2px;background:var(--accent)}
+.mode-card h4{font-size:13px;font-weight:700;color:#0F172A;margin-bottom:6px}
+.mode-card .badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700;margin-bottom:10px;background:#EFF6FF;color:#1D4ED8}
+.mode-card p{font-size:12.5px;color:#475569;margin:0}
+.mode-detail{background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px;margin-top:-6px}
+
+/* live demo */
+.demo-box{background:#0F172A;border-radius:10px;padding:20px;margin:24px 0}
+.demo-label{font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px}
+.demo-output{font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:#94A3B8;min-height:120px;max-height:200px;overflow-y:auto}
+.demo-output .token{color:#7FC8FF;display:inline}
+.demo-output .tool-call{color:#A78BFA;font-style:italic}
+.demo-output .tool-result{color:#34D399;font-style:italic}
+.demo-controls{display:flex;gap:10px;margin-top:14px}
+.demo-btn{padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s}
+.demo-btn:hover{background:#0058BB}
+.demo-btn.sec{background:#1E293B;color:#94A3B8}
+.demo-btn:disabled{opacity:0.5;cursor:not-allowed}
+
+.use-case{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #BAE6FD}
+.use-case h4{color:#1E40AF;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn.next{justify-content:flex-end;text-align:right}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}.mode-grid{grid-template-columns:1fr}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="sidebar-brand">🦜 LangChain Course</div><div class="sidebar-title">Byte-Sized Lessons</div></div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="10-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 10 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link active"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 3 · Module 10 · Streaming</div>
+  <h1>Streaming</h1>
+  <div class="mod-meta">
+    <span>⏱ ~20 min</span><span>💻 Runnable code</span><span>🔴 Live demo</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll learn:</strong> How to stream agent output token by token, the three stream modes (<code>values</code>, <code>updates</code>, <code>messages</code>), how to build a live chat UI with streaming, and async streaming patterns for production.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px 22px;margin:28px 0">
+    <div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">📐 Structural overview — Streaming modes</div>
+    <img src="diagrams/10-streaming.svg" alt="Streaming modes diagram" loading="lazy" style="width:100%;height:auto;display:block;border:1px solid #F1F5F9;border-radius:8px;background:#fff">
+    <p style="font-size:12.5px;color:#64748B;margin:12px 0 0">
+      <a href="diagrams/10-streaming.svg" target="_blank" style="color:#006DDD;font-weight:600;text-decoration:none">↗ Open full size</a>
+      &nbsp;&middot;&nbsp;
+      <a href="diagrams/10-streaming.excalidraw" download style="color:#006DDD;font-weight:600;text-decoration:none">⬇ Edit in Excalidraw</a>
+      &nbsp;— labels use real LangChain classes.
+    </p>
+  </div>
+
+
+  <div class="callout analogy">
+    <div class="callout-icon">🎬</div>
+    <div class="callout-content">
+      <strong>Analogy: streaming video vs. downloaded video</strong>
+      <p>Without streaming, you call <code>invoke()</code> and wait — nothing appears until the agent is completely done, which might take 10+ seconds. That's downloading the video before you can watch it. Streaming lets you display tokens as they arrive, so users see a response forming in real time — like Netflix starting playback immediately while buffering the rest.</p>
+    </div>
+  </div>
+
+  <h2>The Three Stream Modes</h2>
+  <p>LangChain's <code class="inline">agent.stream()</code> takes a <code class="inline">stream_mode</code> parameter. Click a card to see what each mode returns:</p>
+
+  <div class="mode-grid">
+    <div class="mode-card active" id="card-messages" onclick="showMode('messages')">
+      <div class="badge">stream_mode="messages"</div>
+      <h4>Token-by-Token</h4>
+      <p>Best for: chat UIs, live typewriter effect</p>
+    </div>
+    <div class="mode-card" id="card-values" onclick="showMode('values')">
+      <div class="badge">stream_mode="values"</div>
+      <h4>Full State Snapshots</h4>
+      <p>Best for: debugging, step-through inspection</p>
+    </div>
+    <div class="mode-card" id="card-updates" onclick="showMode('updates')">
+      <div class="badge">stream_mode="updates"</div>
+      <h4>State Diffs</h4>
+      <p>Best for: progress tracking, fine-grained UI</p>
+    </div>
+  </div>
+
+  <div class="mode-detail" id="mode-detail">
+    <!-- filled by JS -->
+  </div>
+
+  <h2>Interactive Streaming Demo</h2>
+  <p>This simulates what streaming output looks like at runtime. The color coding shows the different event types your code receives:</p>
+
+  <div class="demo-box">
+    <div class="demo-label">streaming output</div>
+    <div class="demo-output" id="demo-out">
+      <span style="color:#334155;font-style:italic">Click "Run Stream" to see simulated streaming output...</span>
+    </div>
+    <div class="demo-controls">
+      <button class="demo-btn" id="run-btn" onclick="runDemo()">▶ Run Stream</button>
+      <button class="demo-btn sec" onclick="clearDemo()">Clear</button>
+      <span style="font-size:12px;color:#64748B;align-self:center">
+        <span style="color:#7FC8FF">■</span> tokens &nbsp;
+        <span style="color:#A78BFA">■</span> tool call &nbsp;
+        <span style="color:#34D399">■</span> tool result
+      </span>
+    </div>
+  </div>
+
+  <h2>Streaming Code — All Three Modes</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">streaming_modes.py</span></div>
+    <pre><code class="language-python">from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+from langchain.tools import tool
+from langchain_core.messages import HumanMessage, AIMessageChunk
+
+@tool
+def search_web(query: str) -> str:
+    """Search the web for information."""
+    return f"Results for '{query}': Found relevant articles..."
+
+agent = create_agent(
+    model=init_chat_model("openai:gpt-4o-mini", temperature=0.7),
+    tools=[search_web],
+)
+input_data = {"messages": [HumanMessage("Search for LangChain and explain what it is")]}
+
+
+# ── Mode 1: "messages" — token by token ──────────────────────────────────────
+# Best for: chat UIs, live typewriter effect
+# Each chunk is: (message_or_chunk, metadata)
+print("=== MESSAGES MODE ===")
+for chunk, metadata in agent.stream(input_data, stream_mode="messages"):
+    if isinstance(chunk, AIMessageChunk) and chunk.content:
+        # These are the text tokens streaming in
+        print(chunk.content, end="", flush=True)
+print()  # newline at end
+
+
+# ── Mode 2: "values" — full state after each step ────────────────────────────
+# Best for: debugging, seeing full message history at each step
+# Each event is the complete agent state (all messages)
+print("\n=== VALUES MODE ===")
+for state in agent.stream(input_data, stream_mode="values"):
+    last_msg = state["messages"][-1]
+    print(f"Step → {last_msg.type}: {str(last_msg.content)[:80]}...")
+
+
+# ── Mode 3: "updates" — what changed each step ────────────────────────────────
+# Best for: fine-grained UI updates (show tool calls as they happen)
+# Each event is a dict: {node_name: state_delta}
+print("\n=== UPDATES MODE ===")
+for update in agent.stream(input_data, stream_mode="updates"):
+    for node_name, delta in update.items():
+        msgs = delta.get("messages", [])
+        for msg in msgs:
+            print(f"[{node_name}] {msg.type}: {str(msg.content)[:80]}")
+
+
+# ── Multiple modes simultaneously ─────────────────────────────────────────────
+for event_type, data in agent.stream(
+    input_data,
+    stream_mode=["values", "updates"]  # can combine!
+):
+    print(f"Event: {event_type}")</code></pre>
+  </div>
+
+  <h2>Async Streaming — For Production Servers</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">async_streaming.py</span></div>
+    <pre><code class="language-python">import asyncio
+from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+from langchain_core.messages import HumanMessage, AIMessageChunk
+
+agent = create_agent(
+    model=init_chat_model("openai:gpt-4o-mini"),
+    tools=[],
+)
+
+# ── Async token streaming ──────────────────────────────────────────────────────
+async def stream_tokens(message: str) -> str:
+    """Stream tokens, collect and return full response."""
+    full_response = ""
+    async for chunk, metadata in agent.astream(
+        {"messages": [HumanMessage(message)]},
+        stream_mode="messages"
+    ):
+        if isinstance(chunk, AIMessageChunk) and chunk.content:
+            full_response += chunk.content
+            # In a real app, push to WebSocket or SSE here:
+            print(chunk.content, end="", flush=True)
+    print()
+    return full_response
+
+# ── FastAPI SSE endpoint (production pattern) ─────────────────────────────────
+# from fastapi import FastAPI
+# from fastapi.responses import StreamingResponse
+# app = FastAPI()
+#
+# @app.post("/chat")
+# async def chat(request: dict):
+#     async def generate():
+#         async for chunk, _ in agent.astream(
+#             {"messages": [HumanMessage(request["message"])]},
+#             stream_mode="messages"
+#         ):
+#             if hasattr(chunk, 'content') and chunk.content:
+#                 # Server-Sent Events format
+#                 yield f"data: {chunk.content}\n\n"
+#         yield "data: [DONE]\n\n"
+#
+#     return StreamingResponse(generate(), media_type="text/event-stream")
+
+asyncio.run(stream_tokens("Explain machine learning in 3 sentences"))
+
+
+# ── Cancelling a stream ────────────────────────────────────────────────────────
+async def cancelable_stream():
+    try:
+        async for chunk, _ in agent.astream(
+            {"messages": [HumanMessage("Write a very long essay")]},
+            stream_mode="messages"
+        ):
+            if isinstance(chunk, AIMessageChunk) and chunk.content:
+                print(chunk.content, end="", flush=True)
+                # Cancel after first 200 chars:
+                # just break out of the async for loop
+    except asyncio.CancelledError:
+        print("\n[Stream cancelled]")</code></pre>
+  </div>
+
+  <h2>Filtering Tool Calls from Streaming Output</h2>
+  <p>When using <code class="inline">stream_mode="messages"</code>, you receive all events including tool calls. Here's how to filter to only show the final text response in a UI:</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">filter_stream.py</span></div>
+    <pre><code class="language-python">from langchain_core.messages import AIMessageChunk, ToolMessage
+
+# ── Pattern 1: Only show final text tokens (skip tool activity) ───────────────
+for chunk, metadata in agent.stream(input_data, stream_mode="messages"):
+    if isinstance(chunk, AIMessageChunk):
+        # Skip tool call chunks (they have tool_call_chunks, not content)
+        if chunk.content and not chunk.tool_call_chunks:
+            print(chunk.content, end="", flush=True)
+
+# ── Pattern 2: Show everything with labels ────────────────────────────────────
+for chunk, metadata in agent.stream(input_data, stream_mode="messages"):
+    if isinstance(chunk, AIMessageChunk):
+        if chunk.content:
+            print(f"[AI] {chunk.content}", end="", flush=True)
+        if chunk.tool_call_chunks:
+            for tc in chunk.tool_call_chunks:
+                if tc.get("name"):
+                    print(f"\n[🔧 Calling tool: {tc['name']}...]", end="", flush=True)
+    elif isinstance(chunk, ToolMessage):
+        print(f"\n[Tool result: {str(chunk.content)[:50]}...]", end="", flush=True)
+        print()
+
+# ── Pattern 3: Using metadata to filter by source ─────────────────────────────
+for chunk, metadata in agent.stream(input_data, stream_mode="messages"):
+    # metadata contains: {"langgraph_node": "agent", "langgraph_step": 1, ...}
+    if metadata.get("langgraph_node") == "agent":
+        # Only events from the agent node (skip tool nodes)
+        if isinstance(chunk, AIMessageChunk) and chunk.content:
+            print(chunk.content, end="", flush=True)</code></pre>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: not all models stream tool calls</strong>
+      <p>Some models stream the final text response token by token but deliver tool calls as a single chunk (not incrementally). This is a provider limitation, not a LangChain limitation. OpenAI and Anthropic both stream tool call arguments incrementally. Ollama local models may not. Test your specific model if incremental tool call streaming is important to your UI.</p>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: stream() doesn't persist state with checkpointers</strong>
+      <p>When streaming, state is saved to the checkpointer only <em>after the stream completes</em> (the generator is exhausted). If you break out of the loop early (e.g., user cancels), the state may not be persisted. Always let the stream complete (or catch the break) and handle partial state appropriately.</p>
+    </div>
+  </div>
+
+  <h2>Real-World Use Case</h2>
+  <div class="use-case">
+    <h4>💬 Customer Support Chat Widget</h4>
+    <p>A support widget streams agent responses directly to the browser via Server-Sent Events (SSE). The frontend displays tokens as they arrive — users see the response forming in real time, which dramatically improves perceived speed. The agent uses tools to search the knowledge base, but those tool calls are hidden from the user (filtered by checking for <code class="inline">tool_call_chunks</code>). Only text tokens are forwarded to the SSE stream. When the stream ends, a <code class="inline">data: [DONE]</code> event signals the frontend to stop the spinner.</p>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>Key Takeaways</strong>
+      <p>Use <code class="inline">stream_mode="messages"</code> for chat UIs (token by token), <code class="inline">"values"</code> for debugging (full state snapshots), <code class="inline">"updates"</code> for granular step tracking. Use <code class="inline">astream()</code> for async/production servers. Filter tool call chunks from text tokens by checking <code class="inline">chunk.content and not chunk.tool_call_chunks</code>. Module 11 covers <code class="inline">astream_events()</code> for even finer-grained event streaming.</p>
+    </div>
+  </div>
+
+  <div class="mod-nav">
+    <a href="09-short-term-memory.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 09: Short-Term Memory</strong></div>
+    </a>
+    <a href="11-event-streaming.html" class="nav-btn next">
+      <div><small>Next up</small><strong>Module 11: Event Streaming →</strong></div>
+      <span style="font-size:20px">➡</span>
+    </a>
+  </div>
+
+</div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+<script>
+const modeDetails = {
+  messages: {
+    title: '"messages" mode — Token-by-Token Streaming',
+    desc: 'Each iteration yields a <code>(chunk, metadata)</code> tuple. The chunk is an <code>AIMessageChunk</code> (for text tokens) or <code>ToolMessage</code> (for tool results). Use this for chat UIs — it\'s the most granular and gives you every token as it streams from the model.',
+    code: `for chunk, metadata in agent.stream(input, stream_mode="messages"):
+    if isinstance(chunk, AIMessageChunk) and chunk.content:
+        print(chunk.content, end="")  # "The", " weather", " in", " Paris"...`
+  },
+  values: {
+    title: '"values" mode — Full State Snapshots',
+    desc: 'After each agent step completes (model call or tool execution), you receive the <em>entire</em> agent state — all messages so far. Useful for debugging or building a step-by-step inspection view. You\'ll receive fewer events but each contains the full picture.',
+    code: `for state in agent.stream(input, stream_mode="values"):
+    all_messages = state["messages"]  # complete history
+    last = all_messages[-1]
+    print(f"{last.type}: {last.content[:60]}")`
+  },
+  updates: {
+    title: '"updates" mode — State Diffs',
+    desc: 'After each step, you receive only what <em>changed</em> — a dict of <code>{node_name: delta}</code>. This is the most granular for tracking which part of the graph is running. Great for progress bars or showing "Searching..." when a tool node fires.',
+    code: `for update in agent.stream(input, stream_mode="updates"):
+    for node, delta in update.items():
+        # node is "agent" (model call) or "tools" (tool execution)
+        new_msgs = delta.get("messages", [])
+        print(f"[{node}] added {len(new_msgs)} message(s)")`
+  }
+};
+
+function showMode(id) {
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('card-' + id).classList.add('active');
+  const d = modeDetails[id];
+  document.getElementById('mode-detail').innerHTML = `
+    <strong style="display:block;margin-bottom:10px;color:#0F172A">${d.title}</strong>
+    <p style="font-size:14px;color:#475569;margin-bottom:14px">${d.desc}</p>
+    <pre style="background:#0F172A;border-radius:8px;padding:14px;overflow:auto;font-family:monospace;font-size:13px;color:#7FC8FF;margin:0">${d.code}</pre>
+  `;
+}
+showMode('messages');
+
+// Demo simulation
+const demoScript = [
+  {type:'tool-call', text:'[🔧 Tool call: search_web(query="LangChain framework") ]\n', delay:400},
+  {type:'tool-result', text:'[✅ Tool result: "LangChain is an open-source framework..."]\n\n', delay:600},
+  {type:'token', text:'LangChain', delay:200},
+  {type:'token', text:' is', delay:100},
+  {type:'token', text:' a', delay:80},
+  {type:'token', text:' powerful', delay:90},
+  {type:'token', text:' open-source', delay:110},
+  {type:'token', text:' framework', delay:80},
+  {type:'token', text:' for', delay:70},
+  {type:'token', text:' building', delay:90},
+  {type:'token', text:' applications', delay:100},
+  {type:'token', text:' powered', delay:80},
+  {type:'token', text:' by', delay:70},
+  {type:'token', text:' large', delay:90},
+  {type:'token', text:' language', delay:100},
+  {type:'token', text:' models', delay:80},
+  {type:'token', text:' (LLMs)', delay:90},
+  {type:'token', text:'.', delay:70},
+  {type:'token', text:'\n\nKey', delay:200},
+  {type:'token', text:' features', delay:90},
+  {type:'token', text:' include', delay:80},
+  {type:'token', text:' agent', delay:90},
+  {type:'token', text:' creation', delay:100},
+  {type:'token', text:',', delay:60},
+  {type:'token', text:' tool', delay:80},
+  {type:'token', text:' integration', delay:100},
+  {type:'token', text:',', delay:60},
+  {type:'token', text:' memory', delay:90},
+  {type:'token', text:' management', delay:100},
+  {type:'token', text:',', delay:60},
+  {type:'token', text:' and', delay:80},
+  {type:'token', text:' streaming', delay:90},
+  {type:'token', text:' support', delay:80},
+  {type:'token', text:'.', delay:70},
+];
+
+let demoTimeout = null;
+let demoRunning = false;
+
+function clearDemo() {
+  if (demoTimeout) clearTimeout(demoTimeout);
+  demoRunning = false;
+  document.getElementById('demo-out').innerHTML = '<span style="color:#334155;font-style:italic">Click "Run Stream" to see simulated streaming output...</span>';
+  document.getElementById('run-btn').disabled = false;
+}
+
+function runDemo() {
+  if (demoRunning) return;
+  demoRunning = true;
+  document.getElementById('run-btn').disabled = true;
+  document.getElementById('demo-out').innerHTML = '';
+
+  let i = 0;
+  function step() {
+    if (i >= demoScript.length) {
+      demoRunning = false;
+      document.getElementById('run-btn').disabled = false;
+      return;
+    }
+    const ev = demoScript[i++];
+    const out = document.getElementById('demo-out');
+    const span = document.createElement('span');
+    if (ev.type === 'tool-call') {
+      span.className = 'tool-call';
+    } else if (ev.type === 'tool-result') {
+      span.className = 'tool-result';
+    } else {
+      span.className = 'token';
+    }
+    span.textContent = ev.text;
+    out.appendChild(span);
+    out.scrollTop = out.scrollHeight;
+    demoTimeout = setTimeout(step, ev.delay);
+  }
+  step();
+}
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

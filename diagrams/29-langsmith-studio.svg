@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 680" font-family="-apple-system,Segoe UI,sans-serif">
+<defs><marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+<path d="M0,0 L8,3 L0,6 Z" fill="#94a3b8"/></marker></defs>
+<rect width="560" height="680" fill="#ffffff"/>
+<text x="280.0" y="40" text-anchor="middle" font-size="22" font-weight="800" fill="#0F172A">LangSmith Observability</text>
+<rect x="120" y="86" width="320" height="64" rx="12" fill="#EFF6FF" stroke="#1D4ED8" stroke-width="2"/><text x="280.0" y="123.0" text-anchor="middle" font-size="15" font-weight="700" fill="#1D4ED8">LANGSMITH_TRACING=true</text>
+<line x1="280.0" y1="150" x2="280.0" y2="196" stroke="#94a3b8" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="120" y="196" width="320" height="64" rx="12" fill="#F5F3FF" stroke="#6D28D9" stroke-width="2"/><text x="280.0" y="233.0" text-anchor="middle" font-size="15" font-weight="700" fill="#6D28D9">Every run auto-traced</text>
+<line x1="280.0" y1="260" x2="280.0" y2="306" stroke="#94a3b8" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="120" y="306" width="320" height="64" rx="12" fill="#F0FDF4" stroke="#15803D" stroke-width="2"/><text x="280.0" y="343.0" text-anchor="middle" font-size="15" font-weight="700" fill="#15803D">Inspect messages / tool calls</text>
+<line x1="280.0" y1="370" x2="280.0" y2="416" stroke="#94a3b8" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="120" y="416" width="320" height="64" rx="12" fill="#FFF7ED" stroke="#C2410C" stroke-width="2"/><text x="280.0" y="453.0" text-anchor="middle" font-size="15" font-weight="700" fill="#C2410C">Latency + token usage</text>
+<line x1="280.0" y1="480" x2="280.0" y2="526" stroke="#94a3b8" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="120" y="526" width="320" height="64" rx="12" fill="#F0F9FF" stroke="#0369A1" stroke-width="2"/><text x="280.0" y="563.0" text-anchor="middle" font-size="15" font-weight="700" fill="#0369A1">Evaluate + replay in Studio</text>
+<text x="280.0" y="658" text-anchor="middle" font-size="12.5" fill="#64748B">No code changes — set the env vars and runs appear in LangSmith.</text>
+</svg>

@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 02: Your First Agent — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F0F4F8;--surface:#FFFFFF;--sidebar-bg:#0F172A;--sidebar-w:272px;
+  --accent:#006DDD;--accent-light:#E0F2FE;
+  --text:#1E293B;--muted:#64748B;--border:#E2E8F0;
+  --green:#16A34A;--orange:#EA580C;--purple:#7C3AED;
+  --code-bg:#282C34;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px;transition:color 0.15s}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent-light);color:#0369A1;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#EFF6FF,#F0F9FF);border:1px solid #BAE6FD;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#0369A1;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+h3{font-size:1.05rem;font-weight:700;color:#1E293B;margin:28px 0 10px}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#EFF6FF;border-left:4px solid var(--accent)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+
+/* code blocks — delegate to highlight.js */
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between;align-items:center}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+
+/* step boxes */
+.steps{display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:16px;padding:20px 0;border-bottom:1px solid var(--border)}
+.step:last-child{border-bottom:none}
+.step-num{width:36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;margin-top:2px}
+.step-body h4{font-size:14px;font-weight:700;color:#0F172A;margin-bottom:6px}
+.step-body p{font-size:14px;color:#475569;margin:0}
+
+/* inline code */
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+
+/* shell command */
+.shell{background:#0F172A;border-radius:8px;padding:14px 18px;margin:16px 0;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13.5px;color:#86EFAC}
+.shell::before{content:'$ ';color:#475569}
+
+/* output box */
+.output-box{background:#FAFAFA;border:1px solid var(--border);border-radius:8px;padding:16px;margin:16px 0;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px;color:#334155;line-height:1.7}
+.output-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+
+/* diagram */
+.diagram-wrap{background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;margin:28px 0}
+.diagram-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:18px}
+
+/* env var */
+.env-block{background:#0F172A;border-radius:8px;padding:16px 18px;margin:16px 0}
+.env-row{display:flex;align-items:center;gap:12px;font-family:monospace;font-size:13.5px;margin-bottom:8px}
+.env-row:last-child{margin-bottom:0}
+.env-key{color:#7FB8FF}
+.env-val{color:#86EFAC}
+.env-comment{color:#475569}
+
+/* use case */
+.use-case{background:linear-gradient(135deg,#EFF6FF 0%,#F0FDF4 100%);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #BAE6FD}
+.use-case h4{color:#1E40AF;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+
+/* nav footer */
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn.next{justify-content:flex-end;text-align:right}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR (shared nav) -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">🦜 LangChain Course</div>
+    <div class="sidebar-title">Byte-Sized Lessons</div>
+  </div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="02-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 02 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link active"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 1 · Module 02 · Hands-On</div>
+  <h1>Your First Agent</h1>
+  <div class="mod-meta">
+    <span>⏱ ~15 min</span>
+    <span>💻 Runnable code</span>
+    <span>⚡ Interactive diagram</span>
+    <span>🔑 Needs API key</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll do:</strong> Install LangChain, set up API keys, write a working agent with a tool, run it, and read the output. By the end of this module you'll have something real running — and we'll dissect each line so nothing is magic.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px 22px;margin:28px 0">
+    <div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">📐 Structural overview — The agent (ReAct) loop</div>
+    <img src="diagrams/02-agent-loop.svg" alt="The agent (ReAct) loop diagram" loading="lazy" style="width:100%;height:auto;display:block;border:1px solid #F1F5F9;border-radius:8px;background:#fff">
+    <p style="font-size:12.5px;color:#64748B;margin:12px 0 0">
+      <a href="diagrams/02-agent-loop.svg" target="_blank" style="color:#006DDD;font-weight:600;text-decoration:none">↗ Open full size</a>
+      &nbsp;&middot;&nbsp;
+      <a href="diagrams/02-agent-loop.excalidraw" download style="color:#006DDD;font-weight:600;text-decoration:none">⬇ Edit in Excalidraw</a>
+      &nbsp;— labels use real LangChain classes.
+    </p>
+  </div>
+
+
+  <h2>Step-by-Step Setup</h2>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Create a virtual environment</h4>
+        <p>Always isolate your LangChain project. This keeps dependencies clean.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Install the packages</h4>
+        <p>The core package plus at least one provider package. We'll use OpenAI here.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Set your API key</h4>
+        <p>Never hardcode keys. Use environment variables or a <code class="inline">.env</code> file.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Write the agent</h4>
+        <p>About 20 lines to a working, tool-using agent.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h4>Run it and read the output</h4>
+        <p>We'll walk through what every line of output means.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>1. Install</h2>
+
+  <div class="shell">python -m venv .venv &amp;&amp; source .venv/bin/activate</div>
+  <div class="shell">pip install langchain langchain-openai python-dotenv</div>
+
+  <div class="callout info">
+    <div class="callout-icon">📦</div>
+    <div class="callout-content">
+      <strong>What each package does</strong>
+      <p><code class="inline">langchain</code> — core framework (create_agent, tools, memory). <code class="inline">langchain-openai</code> — OpenAI model integration. <code class="inline">python-dotenv</code> — loads <code class="inline">.env</code> files for local development. If you prefer Anthropic: <code class="inline">pip install langchain-anthropic</code>.</p>
+    </div>
+  </div>
+
+  <h2>2. Configure Your API Key</h2>
+  <p>Create a <code class="inline">.env</code> file in your project root:</p>
+
+  <div class="env-block">
+    <div class="env-row"><span class="env-key">OPENAI_API_KEY</span><span style="color:#475569">=</span><span class="env-val">sk-proj-...</span></div>
+    <div class="env-row"><span class="env-comment"># Optional but recommended: enable LangSmith tracing</span></div>
+    <div class="env-row"><span class="env-key">LANGSMITH_TRACING</span><span style="color:#475569">=</span><span class="env-val">true</span></div>
+    <div class="env-row"><span class="env-key">LANGSMITH_API_KEY</span><span style="color:#475569">=</span><span class="env-val">lsv2_pt_...</span><span class="env-comment">  # free tier at smith.langchain.com</span></div>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">💡</div>
+    <div class="callout-content">
+      <strong>LangSmith is free and highly recommended</strong>
+      <p>Sign up at <a href="https://smith.langchain.com" style="color:#0369A1">smith.langchain.com</a> (free tier available). With <code class="inline">LANGSMITH_TRACING=true</code>, every agent run is automatically logged — you'll see exactly which tools were called, what the model "thought", and how long each step took. This is invaluable for debugging.</p>
+    </div>
+  </div>
+
+  <h2>3. Write Your First Agent</h2>
+  <p>Here's the complete, runnable file — we'll dissect every part after:</p>
+
+  <div class="code-wrap">
+    <div class="code-header">
+      <span class="code-lang">python</span>
+      <span class="code-filename">first_agent.py</span>
+    </div>
+    <pre><code class="language-python">from dotenv import load_dotenv
+load_dotenv()  # loads .env file
+
+from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+from langchain.tools import tool
+
+# ── 1. Define a tool ─────────────────────────────────────────────────────────
+@tool
+def multiply(a: float, b: float) -> float:
+    """Multiply two numbers together. Use this for any multiplication."""
+    return a * b
+
+@tool
+def add(a: float, b: float) -> float:
+    """Add two numbers together. Use this for addition."""
+    return a + b
+
+# ── 2. Create the model ──────────────────────────────────────────────────────
+model = init_chat_model("openai:gpt-4o-mini", temperature=0)
+
+# ── 3. Create the agent ──────────────────────────────────────────────────────
+agent = create_agent(
+    model=model,
+    tools=[multiply, add],
+    system_prompt="You are a helpful math assistant. Show your reasoning.",
+)
+
+# ── 4. Invoke (single turn) ──────────────────────────────────────────────────
+result = agent.invoke({
+    "messages": [{"role": "user", "content": "What is 25 multiplied by 4, then add 17?"}]
+})
+
+# ── 5. Print the response ────────────────────────────────────────────────────
+print(result["messages"][-1].content)</code></pre>
+  </div>
+
+  <h2>Line-by-Line Breakdown</h2>
+
+  <h3>The <code class="inline">@tool</code> decorator</h3>
+  <p>Turns any Python function into a LangChain tool. Three things matter:</p>
+  <ul>
+    <li><strong>Type hints are required</strong> — they generate the JSON schema the model uses to call the tool correctly</li>
+    <li><strong>The docstring is the tool description</strong> — the model reads this to decide when to use the tool</li>
+    <li><strong>The function name is the tool name</strong> — keep it clear and action-oriented</li>
+  </ul>
+
+  <h3><code class="inline">init_chat_model()</code></h3>
+  <p>Initializes a chat model using a <code class="inline">"provider:model-name"</code> string. The <code class="inline">temperature=0</code> makes the model deterministic — good for tools where you want consistent behavior. We cover model configuration fully in Module 03.</p>
+
+  <h3><code class="inline">create_agent()</code></h3>
+  <p>The main factory. We pass three things: the model, the list of tools, and an optional system prompt. The agent automatically handles:</p>
+  <ul>
+    <li>Converting tools to the format the model expects</li>
+    <li>Running the ReAct loop (reason → call tool → observe → reason again)</li>
+    <li>Returning the final message when the model decides it's done</li>
+  </ul>
+
+  <h3><code class="inline">agent.invoke()</code></h3>
+  <p>Runs the agent synchronously (blocking). The input is always a dict with a <code class="inline">messages</code> key. You can pass plain dicts (as shown) or LangChain message objects — both work.</p>
+
+  <h2>What the Agent Actually Does</h2>
+  <p>Run the script. Here's what happens internally:</p>
+
+  <!-- ANIMATED AGENT LOOP DIAGRAM -->
+  <div class="diagram-wrap">
+    <div class="diagram-label">⚡ Interactive Agent Loop — click each step to expand</div>
+    <div id="loop-diagram" style="display:flex;flex-direction:column;gap:0">
+
+      <div class="loop-step" data-step="0" style="cursor:pointer">
+        <div class="ls-header" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #F1F5F9;transition:background 0.15s;border-radius:8px">
+          <div class="ls-num" style="width:32px;height:32px;border-radius:50%;background:#EFF6FF;color:#1D4ED8;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">1</div>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:14px;color:#0F172A">User sends message</div>
+            <div style="font-size:12px;color:#64748B;margin-top:2px">"What is 25 multiplied by 4, then add 17?"</div>
+          </div>
+          <div class="ls-arrow" style="color:#CBD5E1;font-size:16px;transition:transform 0.2s">›</div>
+        </div>
+        <div class="ls-detail" style="display:none;padding:14px 16px 16px 60px;background:#F8FAFC;border-radius:0 0 8px 8px">
+          <p style="font-size:13px;color:#475569;margin:0">The message is added to the conversation history as a <code class="inline">HumanMessage</code>. This is the state that gets passed to the model.</p>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:center;color:#CBD5E1;font-size:22px;padding:2px 0">↓</div>
+
+      <div class="loop-step" data-step="1" style="cursor:pointer">
+        <div class="ls-header" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #F1F5F9;transition:background 0.15s;border-radius:8px">
+          <div class="ls-num" style="width:32px;height:32px;border-radius:50%;background:#F5F3FF;color:#6D28D9;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">2</div>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:14px;color:#0F172A">Model reasons: calls <code>multiply</code></div>
+            <div style="font-size:12px;color:#64748B;margin-top:2px">Model decides it needs to use multiply(25, 4) first</div>
+          </div>
+          <div class="ls-arrow" style="color:#CBD5E1;font-size:16px;transition:transform 0.2s">›</div>
+        </div>
+        <div class="ls-detail" style="display:none;padding:14px 16px 16px 60px;background:#F8FAFC;border-radius:0 0 8px 8px">
+          <p style="font-size:13px;color:#475569;margin:0 0 10px">The model returns an <code class="inline">AIMessage</code> with a <code class="inline">tool_calls</code> field — it hasn't answered yet, it's requesting a tool call. LangChain reads this and executes the Python function.</p>
+          <div style="background:#21252B;border-radius:6px;padding:12px;font-family:monospace;font-size:12.5px;color:#E2E8F0">tool_calls: [{"name": "multiply", "args": {"a": 25.0, "b": 4.0}}]</div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:center;color:#CBD5E1;font-size:22px;padding:2px 0">↓</div>
+
+      <div class="loop-step" data-step="2" style="cursor:pointer">
+        <div class="ls-header" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #F1F5F9;transition:background 0.15s;border-radius:8px">
+          <div class="ls-num" style="width:32px;height:32px;border-radius:50%;background:#F0FDF4;color:#15803D;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">3</div>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:14px;color:#0F172A">Tool executes → returns 100</div>
+            <div style="font-size:12px;color:#64748B;margin-top:2px">Python runs multiply(25, 4) = 100. Result added as ToolMessage.</div>
+          </div>
+          <div class="ls-arrow" style="color:#CBD5E1;font-size:16px;transition:transform 0.2s">›</div>
+        </div>
+        <div class="ls-detail" style="display:none;padding:14px 16px 16px 60px;background:#F8FAFC;border-radius:0 0 8px 8px">
+          <p style="font-size:13px;color:#475569;margin:0">LangChain executes <code class="inline">multiply(25.0, 4.0)</code> and wraps the result in a <code class="inline">ToolMessage</code>. This goes back into the conversation history — the model will see it on the next pass.</p>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:center;color:#CBD5E1;font-size:22px;padding:2px 0">↓</div>
+
+      <div class="loop-step" data-step="3" style="cursor:pointer">
+        <div class="ls-header" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #F1F5F9;transition:background 0.15s;border-radius:8px">
+          <div class="ls-num" style="width:32px;height:32px;border-radius:50%;background:#F5F3FF;color:#6D28D9;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">4</div>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:14px;color:#0F172A">Model reasons again: calls <code>add</code></div>
+            <div style="font-size:12px;color:#64748B;margin-top:2px">Sees result 100, now calls add(100, 17)</div>
+          </div>
+          <div class="ls-arrow" style="color:#CBD5E1;font-size:16px;transition:transform 0.2s">›</div>
+        </div>
+        <div class="ls-detail" style="display:none;padding:14px 16px 16px 60px;background:#F8FAFC;border-radius:0 0 8px 8px">
+          <p style="font-size:13px;color:#475569;margin:0">The model loops back. It sees the multiplication result (100) and now calls the <code class="inline">add</code> tool with <code class="inline">add(100, 17)</code>. Each tool call is a new iteration of the ReAct loop.</p>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:center;color:#CBD5E1;font-size:22px;padding:2px 0">↓</div>
+
+      <div class="loop-step" data-step="4" style="cursor:pointer">
+        <div class="ls-header" style="display:flex;align-items:center;gap:12px;padding:14px 16px;transition:background 0.15s;border-radius:8px">
+          <div class="ls-num" style="width:32px;height:32px;border-radius:50%;background:#FFF7ED;color:#C2410C;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">5</div>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:14px;color:#0F172A">Model answers: "The result is 117"</div>
+            <div style="font-size:12px;color:#64748B;margin-top:2px">No more tools needed — returns a plain text AIMessage.</div>
+          </div>
+          <div class="ls-arrow" style="color:#CBD5E1;font-size:16px;transition:transform 0.2s">›</div>
+        </div>
+        <div class="ls-detail" style="display:none;padding:14px 16px 16px 60px;background:#F8FAFC;border-radius:0 0 8px 8px">
+          <p style="font-size:13px;color:#475569;margin:0">The model has all the information it needs. It returns a final <code class="inline">AIMessage</code> with no <code class="inline">tool_calls</code> — just a text answer. The agent loop exits. <code class="inline">result["messages"][-1].content</code> is this final message.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <h2>Expected Output</h2>
+  <div class="output-label">Terminal output</div>
+  <div class="output-box">
+Let me calculate this step by step.
+
+First, 25 × 4 = 100
+Then, 100 + 17 = 117
+
+The result is <strong>117</strong>.
+  </div>
+
+  <h2>Reading the Full Message History</h2>
+  <p>If you want to see what happened inside the agent loop, print all messages:</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">debug output</span></div>
+    <pre><code class="language-python">for msg in result["messages"]:
+    print(f"{msg.__class__.__name__}: {msg.content[:80] if msg.content else '(tool call)'}")
+    if hasattr(msg, 'tool_calls') and msg.tool_calls:
+        for tc in msg.tool_calls:
+            print(f"  → Tool: {tc['name']}({tc['args']})")</code></pre>
+  </div>
+
+  <div class="output-label">Debug output</div>
+  <div class="output-box">
+HumanMessage: What is 25 multiplied by 4, then add 17?
+AIMessage: (tool call)
+  → Tool: multiply({'a': 25.0, 'b': 4.0})
+ToolMessage: 100.0
+AIMessage: (tool call)
+  → Tool: add({'a': 100.0, 'b': 17.0})
+ToolMessage: 117.0
+AIMessage: Let me calculate this step by step. First, 25 × 4 = 100. Then, 100 +
+  </div>
+
+  <h2>Add LangSmith Tracing (Recommended)</h2>
+  <p>If you set <code class="inline">LANGSMITH_TRACING=true</code>, every run is automatically traced in the LangSmith UI. No code changes needed — it's automatic when the env var is set. You'll see:</p>
+  <ul>
+    <li>The full message chain (inputs and outputs for every model call)</li>
+    <li>Tool calls with their arguments and results</li>
+    <li>Latency and token usage for each step</li>
+    <li>The ability to replay and debug any run</li>
+  </ul>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: Model string format</strong>
+      <p><code class="inline">init_chat_model()</code> takes a <code class="inline">"provider:model-name"</code> string. Common mistakes: using the OpenAI SDK's model name directly (<code class="inline">"gpt-4o"</code> without provider prefix) will fail — always include the provider: <code class="inline">"openai:gpt-4o"</code>. See Module 03 for all valid provider strings.</p>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: Missing type hints on tools</strong>
+      <p>If you forget type hints on a <code class="inline">@tool</code> function, LangChain can't generate the schema and the model won't know how to call it correctly. This will fail silently or produce wrong results. Type hints are not optional — they're the schema.</p>
+    </div>
+  </div>
+
+  <h2>Variations to Try</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">try these</span></div>
+    <pre><code class="language-python"># Use Anthropic instead of OpenAI (pip install langchain-anthropic first)
+model = init_chat_model("anthropic:claude-3-5-haiku-20241022", temperature=0)
+
+# Add more tools
+@tool
+def get_word_length(word: str) -> int:
+    """Get the number of characters in a word."""
+    return len(word)
+
+# Invoke with a different question
+result = agent.invoke({
+    "messages": [{"role": "user", "content": "How many letters in 'LangChain'?"}]
+})
+
+# Stream tokens (shows output as it generates)
+for chunk in agent.stream(
+    {"messages": [{"role": "user", "content": "What is 12 * 12?"}]},
+    stream_mode="messages"
+):
+    if chunk[1].get("langgraph_node") == "agent":
+        for msg in chunk[0]:
+            if hasattr(msg, "content") and msg.content:
+                print(msg.content, end="", flush=True)</code></pre>
+  </div>
+
+  <h2>Real-World Use Case</h2>
+  <div class="use-case">
+    <h4>🔧 Internal Data Analysis Assistant</h4>
+    <p>Replace the math tools with actual data functions: <code class="inline">query_database(sql: str)</code>, <code class="inline">generate_chart(data: dict, type: str)</code>, <code class="inline">send_slack_message(channel: str, text: str)</code>. The agent pattern is identical — just different tools. A business analyst types in plain English, and the agent figures out which database queries to run and how to combine the results.</p>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>You now have a working LangChain agent.</strong>
+      <p>The five-step pattern — define tools, init model, create_agent, invoke, read output — applies to every agent in this course. In the next three modules we'll go deeper on each building block: models (Module 03), messages (Module 04), and tools (Module 05).</p>
+    </div>
+  </div>
+
+  <div class="mod-nav">
+    <a href="01-what-is-langchain.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 01: What is LangChain?</strong></div>
+    </a>
+    <a href="03-chat-models.html" class="nav-btn next">
+      <div><small>Next up</small><strong>Module 03: Chat Models →</strong></div>
+      <span style="font-size:20px">➡</span>
+    </a>
+  </div>
+
+</div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+<script>
+// Interactive agent loop diagram
+document.querySelectorAll('.loop-step').forEach(step => {
+  const header = step.querySelector('.ls-header');
+  const detail = step.querySelector('.ls-detail');
+  const arrow = step.querySelector('.ls-arrow');
+
+  if (!detail) return;
+
+  header.addEventListener('mouseenter', () => {
+    header.style.background = '#F8FAFC';
+  });
+  header.addEventListener('mouseleave', () => {
+    if (!detail.style.display || detail.style.display === 'none') {
+      header.style.background = '';
+    }
+  });
+  header.addEventListener('click', () => {
+    const isOpen = detail.style.display === 'block';
+    detail.style.display = isOpen ? 'none' : 'block';
+    arrow.style.transform = isOpen ? '' : 'rotate(90deg)';
+    arrow.style.color = isOpen ? '#CBD5E1' : '#006DDD';
+    header.style.background = isOpen ? '' : '#EFF6FF';
+  });
+});
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

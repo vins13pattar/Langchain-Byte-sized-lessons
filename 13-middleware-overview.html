@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 13: Middleware Overview — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F0F4F8;--surface:#FFF;--sidebar-bg:#0F172A;--sidebar-w:272px;--accent:#006DDD;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--green:#16A34A;--orange:#EA580C;--purple:#7C3AED}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:#FFF7ED;color:#C2410C;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#FFF7ED,#FFEDD5);border:1px solid #FED7AA;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#9A3412;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+h3{font-size:1.05rem;font-weight:700;color:#1E293B;margin:28px 0 10px}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#EFF6FF;border-left:4px solid var(--accent)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+
+/* hook pipeline */
+.pipeline{margin:28px 0}
+.pipeline-row{display:flex;align-items:stretch;gap:0;margin-bottom:0}
+.pipe-box{flex:1;padding:14px 16px;text-align:center;border:1px solid var(--border);background:#fff;position:relative}
+.pipe-box:first-child{border-radius:10px 0 0 10px}
+.pipe-box:last-child{border-radius:0 10px 10px 0}
+.pipe-box .hook{font-family:monospace;font-size:11px;font-weight:700;color:#7C3AED;display:block;margin-bottom:4px}
+.pipe-box .label{font-size:11px;color:#64748B}
+.pipe-box.active{background:#EDE9FE;border-color:#C4B5FD}
+.pipe-arrow{display:flex;align-items:center;padding:0 4px;color:#94A3B8;font-size:16px}
+.model-box{background:#EFF6FF;border:2px solid #93C5FD;border-radius:10px;padding:12px 20px;text-align:center;margin:0 8px}
+.model-box .lbl{font-size:12px;font-weight:700;color:#1D4ED8}
+
+/* hook cards */
+.hook-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0}
+.hook-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:border-color 0.2s}
+.hook-card:hover{border-color:var(--purple)}
+.hook-card .hname{font-family:monospace;font-size:13px;font-weight:700;color:#7C3AED;margin-bottom:6px}
+.hook-card .hdesc{font-size:13px;color:#475569}
+
+.use-case{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #BAE6FD}
+.use-case h4{color:#1E40AF;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn.next{justify-content:flex-end;text-align:right}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}.hook-grid{grid-template-columns:1fr}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="sidebar-brand">🦜 LangChain Course</div><div class="sidebar-title">Byte-Sized Lessons</div></div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="13-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 13 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link active"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 4 · Module 13 · Middleware</div>
+  <h1>Middleware Overview</h1>
+  <div class="mod-meta">
+    <span>⏱ ~20 min</span><span>💻 Runnable code</span><span>🔗 Hook pipeline</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll learn:</strong> What middleware is and why it exists, the five hook types and when they fire, how to write your first middleware class, and how to stack multiple middleware instances.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px 22px;margin:28px 0">
+    <div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">📐 Structural overview — Middleware hook points</div>
+    <img src="diagrams/13-middleware-pipeline.svg" alt="Middleware hook points diagram" loading="lazy" style="width:100%;height:auto;display:block;border:1px solid #F1F5F9;border-radius:8px;background:#fff">
+    <p style="font-size:12.5px;color:#64748B;margin:12px 0 0">
+      <a href="diagrams/13-middleware-pipeline.svg" target="_blank" style="color:#006DDD;font-weight:600;text-decoration:none">↗ Open full size</a>
+      &nbsp;&middot;&nbsp;
+      <a href="diagrams/13-middleware-pipeline.excalidraw" download style="color:#006DDD;font-weight:600;text-decoration:none">⬇ Edit in Excalidraw</a>
+      &nbsp;— labels use real LangChain classes.
+    </p>
+  </div>
+
+
+  <div class="callout analogy">
+    <div class="callout-icon">🚦</div>
+    <div class="callout-content">
+      <strong>Analogy: airport security checkpoints</strong>
+      <p>The agent loop is like flying: you (the message) go through several checkpoints before reaching the plane (the model). Middleware are the checkpoints — each one can inspect, modify, or stop you. <code>@before_model</code> is the gate check before boarding. <code>@after_model</code> is customs after landing. <code>@wrap_model_call</code> is the full journey from check-in to arrival. None of these know about the plane manufacturer — they just intercept at the right moment.</p>
+    </div>
+  </div>
+
+  <h2>The Middleware Pipeline</h2>
+  <p>Middleware wraps the agent's model calls and tool calls at specific hook points. Each hook sees the agent state and can read, modify, or interrupt it.</p>
+
+  <div class="pipeline">
+    <div style="display:flex;align-items:center;gap:4px;overflow-x:auto;padding-bottom:8px">
+      <div class="pipe-box active">
+        <span class="hook">@dynamic_prompt</span>
+        <span class="label">Inject system prompt</span>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-box active">
+        <span class="hook">@before_model</span>
+        <span class="label">Pre-process messages</span>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="model-box">
+        <div class="lbl">🤖 Model Call</div>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-box active">
+        <span class="hook">@after_model</span>
+        <span class="label">Post-process response</span>
+      </div>
+      <div class="pipe-arrow">→</div>
+      <div class="pipe-box active">
+        <span class="hook">@wrap_tool_call</span>
+        <span class="label">Wrap each tool</span>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:4px"><code>@wrap_model_call</code> wraps the entire sequence above (before + model + after).</p>
+  </div>
+
+  <h2>The Five Hook Decorators</h2>
+
+  <div class="hook-grid">
+    <div class="hook-card">
+      <div class="hname">@dynamic_prompt</div>
+      <div class="hdesc">Called before each model invocation. Return a string to inject as the system prompt. Has access to current state and context. Replaces the static <code>system_prompt</code> parameter.</div>
+    </div>
+    <div class="hook-card">
+      <div class="hname">@before_model</div>
+      <div class="hdesc">Called with the message list before each model call. Modify, filter, or augment messages. Can raise an exception to abort the call. Return modified messages or None to pass through.</div>
+    </div>
+    <div class="hook-card">
+      <div class="hname">@after_model</div>
+      <div class="hdesc">Called with the model's AIMessage response. Inspect or modify the response before it's processed. Can detect refusals, add audit logs, or transform output.</div>
+    </div>
+    <div class="hook-card">
+      <div class="hname">@wrap_model_call</div>
+      <div class="hdesc">Wraps the entire model invocation (before + call + after). Use for timing, retries, fallbacks, or circuit breaking. You control when/whether to call <code>next()</code>.</div>
+    </div>
+    <div class="hook-card" style="grid-column:span 2">
+      <div class="hname">@wrap_tool_call</div>
+      <div class="hdesc">Wraps each individual tool execution. Use for retry logic, logging, rate limiting, or blocking certain tool calls. Called once per tool per invocation. You receive the tool name, arguments, and a <code>next()</code> callable to execute the tool.</div>
+    </div>
+  </div>
+
+  <h2>Your First Middleware</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">first_middleware.py</span></div>
+    <pre><code class="language-python">from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+from langchain.agents.middleware import AgentMiddleware
+from langchain.agents.middleware import (
+    before_model, after_model, wrap_model_call, wrap_tool_call, dynamic_prompt
+)
+from langchain_core.messages import SystemMessage
+import time
+
+# ── Define a middleware class ──────────────────────────────────────────────────
+class LoggingMiddleware(AgentMiddleware):
+    """Logs every model call and tool execution with timing."""
+
+    @dynamic_prompt
+    def build_prompt(self, state, context) -> str:
+        """Inject a system prompt dynamically based on state."""
+        # state has all agent state fields (messages, custom fields, etc.)
+        # context has runtime context (user_id, etc.)
+        user_name = context.get("user_name", "User")
+        return f"You are a helpful assistant. You are talking to {user_name}."
+
+    @before_model
+    def log_before(self, messages):
+        """Log before the model is called."""
+        print(f"[MW] → Model call with {len(messages)} messages")
+        # Optionally modify messages (e.g., trim, filter):
+        return messages  # pass through unchanged
+        # Return None or omit return to pass through unchanged
+
+    @after_model
+    def log_after(self, response):
+        """Log after the model responds."""
+        content_preview = str(response.content)[:60]
+        print(f"[MW] ← Model response: {content_preview}...")
+        return response  # pass through unchanged
+
+    @wrap_tool_call
+    async def time_tool(self, tool_name, tool_args, next):
+        """Time every tool call."""
+        print(f"[MW] 🔧 Starting tool: {tool_name}({tool_args})")
+        start = time.perf_counter()
+        result = await next(tool_args)  # execute the actual tool
+        elapsed = time.perf_counter() - start
+        print(f"[MW] ✅ Tool {tool_name} completed in {elapsed:.2f}s")
+        return result
+
+# ── Use it ────────────────────────────────────────────────────────────────────
+agent = create_agent(
+    model=init_chat_model("openai:gpt-4o-mini"),
+    tools=[],
+    middleware=[LoggingMiddleware()],  # list of middleware instances
+)
+</code></pre>
+  </div>
+
+  <h2>Stacking Multiple Middleware</h2>
+  <p>Middleware runs in order — first listed runs outermost (first in, last out). Think of it as nesting: Middleware1 wraps Middleware2 wraps the model call.</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">middleware_stack.py</span></div>
+    <pre><code class="language-python">from langchain.agents import create_agent
+from langchain.chat_models import init_chat_model
+from langchain.agents.middleware import (
+    AgentMiddleware,
+    SummarizationMiddleware,    # prebuilt — covered in Module 14
+    HumanInTheLoopMiddleware,   # prebuilt — covered in Module 14
+)
+from langchain.agents.middleware import before_model, wrap_tool_call
+
+class AuditMiddleware(AgentMiddleware):
+    """Logs all activity to an audit trail."""
+
+    @before_model
+    def audit_input(self, messages):
+        # Log to your audit system
+        print(f"[AUDIT] Model call: {len(messages)} messages")
+        return messages
+
+    @wrap_tool_call
+    async def audit_tool(self, tool_name, tool_args, next):
+        print(f"[AUDIT] Tool called: {tool_name}")
+        result = await next(tool_args)
+        print(f"[AUDIT] Tool result: {str(result)[:50]}")
+        return result
+
+class RateLimitMiddleware(AgentMiddleware):
+    """Simple per-minute rate limiter."""
+
+    def __init__(self, max_calls_per_minute: int = 60):
+        self.max_calls = max_calls_per_minute
+        self._calls = []
+
+    @before_model
+    def check_rate_limit(self, messages):
+        now = time.time()
+        # Remove calls older than 60 seconds
+        self._calls = [t for t in self._calls if now - t < 60]
+        if len(self._calls) >= self.max_calls:
+            raise RuntimeError(f"Rate limit exceeded: {self.max_calls} calls/min")
+        self._calls.append(now)
+        return messages
+
+# Stack them — order matters!
+# Execution order: AuditMiddleware → RateLimitMiddleware → SummarizationMiddleware → Model
+agent = create_agent(
+    model=init_chat_model("openai:gpt-4o-mini"),
+    tools=[],
+    middleware=[
+        AuditMiddleware(),                    # outermost: runs first
+        RateLimitMiddleware(max_calls_per_minute=30),
+        SummarizationMiddleware(max_tokens=4000),  # innermost: runs last before model
+    ],
+)
+import time  # for the rate limiter example above</code></pre>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: middleware runs on every loop iteration, not once</strong>
+      <p>Each middleware hook fires on every pass through the ReAct loop — every model call, every tool call. If your middleware does something expensive (like a database lookup), consider caching the result using the agent state or a local dict. A <code>@before_model</code> hook that runs a slow operation will multiply that latency by the number of reasoning steps the agent takes.</p>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <div class="callout-icon">ℹ️</div>
+    <div class="callout-content">
+      <strong>Middleware vs. tools — which to use?</strong>
+      <p>Use <strong>tools</strong> for things the agent explicitly decides to do (search the web, send an email). Use <strong>middleware</strong> for cross-cutting concerns that happen automatically regardless of agent decisions: logging, rate limiting, prompt injection, message summarization, PII detection. Middleware is invisible to the model; tools are visible and the model can choose whether to call them.</p>
+    </div>
+  </div>
+
+  <h2>Real-World Use Case</h2>
+  <div class="use-case">
+    <h4>🏢 Enterprise Agent Deployment</h4>
+    <p>A company deploys a customer service agent with four middleware layers: (1) <code>AuditMiddleware</code> logs every model call and tool invocation to a compliance log; (2) <code>RateLimitMiddleware</code> prevents a single user from exhausting API quotas; (3) <code>PIIMiddleware</code> detects and masks credit card numbers and SSNs in messages before they reach the model; (4) <code>SummarizationMiddleware</code> compresses old messages to stay within context limits. None of these concerns are visible to the agent — they "just work" for every request, regardless of which tools the agent calls.</p>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>Key Takeaways</strong>
+      <p>Middleware = cross-cutting logic that wraps the agent loop. Five hooks: <code>@dynamic_prompt</code>, <code>@before_model</code>, <code>@after_model</code>, <code>@wrap_model_call</code>, <code>@wrap_tool_call</code>. Extend <code>AgentMiddleware</code> and decorate methods. Pass as a list to <code>create_agent(middleware=[...])</code>. First in the list = outermost. Module 14 covers the prebuilt middleware you get for free.</p>
+    </div>
+  </div>
+
+  <div class="mod-nav">
+    <a href="12-long-term-memory.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 12: Long-Term Memory</strong></div>
+    </a>
+    <a href="14-prebuilt-middleware.html" class="nav-btn next">
+      <div><small>Next up</small><strong>Module 14: Prebuilt Middleware →</strong></div>
+      <span style="font-size:20px">➡</span>
+    </a>
+  </div>
+
+</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

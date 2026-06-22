@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 27: Interaction Patterns — LangChain Byte-Sized Lessons</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F0F4F8;--surface:#FFF;--sidebar-bg:#0F172A;--sidebar-w:272px;--accent:#006DDD;--text:#1E293B;--muted:#64748B;--border:#E2E8F0;--green:#16A34A;--orange:#EA580C;--purple:#7C3AED;--indigo:#4F46E5}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;display:flex}
+a{text-decoration:none;color:inherit}
+.sidebar{position:fixed;left:0;top:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);overflow-y:auto;z-index:100}
+.sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#1E293B}
+.sidebar-header{padding:20px 16px 16px;border-bottom:1px solid #1E293B}
+.sidebar-brand{color:#7FC8FF;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.sidebar-title{color:#fff;font-size:15px;font-weight:700;margin-top:4px}
+.sidebar-home{display:flex;align-items:center;gap:6px;color:#64748B;font-size:12px;padding:8px 16px}
+.sidebar-home:hover{color:#94A3B8}
+.nav-section{padding:12px 16px 4px;color:#334155;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.nav-link{display:flex;align-items:center;gap:8px;padding:7px 16px;color:#64748B;font-size:12.5px;transition:all 0.15s;line-height:1.3}
+.nav-link:hover{color:#E2E8F0;background:rgba(255,255,255,0.04)}
+.nav-link.active{color:#7FC8FF;background:rgba(0,109,221,0.15);border-left:3px solid #006DDD;padding-left:13px}
+.nav-link .n{color:#334155;font-size:10px;font-weight:600;min-width:20px}
+.nav-link.active .n{color:#4B9BE3}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh}
+.content{max-width:820px;margin:0 auto;padding:48px 44px 80px}
+.mod-badge{display:inline-flex;align-items:center;gap:6px;background:#E0E7FF;color:#3730A3;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:18px}
+h1{font-size:2.2rem;font-weight:900;color:#0F172A;line-height:1.2;margin-bottom:14px}
+.mod-meta{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:36px;padding-bottom:28px;border-bottom:2px solid var(--border)}
+.mod-meta span{font-size:13px;color:var(--muted)}
+.overview-box{background:linear-gradient(135deg,#E0E7FF,#C7D2FE);border:1px solid #A5B4FC;border-radius:12px;padding:20px 24px;margin-bottom:36px}
+.overview-box p{color:#3730A3;font-size:15px;margin:0}
+h2{font-size:1.35rem;font-weight:800;color:#0F172A;margin:44px 0 16px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+p{margin-bottom:16px;color:#334155;font-size:15px}
+ul,ol{padding-left:20px;margin-bottom:16px;color:#334155;font-size:15px}
+li{margin-bottom:6px}
+.callout{border-radius:10px;padding:16px 20px;margin:24px 0;display:flex;gap:14px;align-items:flex-start}
+.callout-icon{font-size:22px;flex-shrink:0}
+.callout.analogy{background:#F5F3FF;border-left:4px solid var(--purple)}
+.callout.tip{background:#F0FDF4;border-left:4px solid var(--green)}
+.callout.warning{background:#FFF7ED;border-left:4px solid var(--orange)}
+.callout.info{background:#EFF6FF;border-left:4px solid var(--accent)}
+.callout-content strong{display:block;margin-bottom:6px;font-size:14px}
+.callout-content p{margin:0;font-size:14px}
+code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px}
+.code-wrap{margin:20px 0;border-radius:10px;overflow:hidden}
+.code-header{background:#21252B;padding:10px 16px;display:flex;justify-content:space-between}
+.code-lang{color:#5C6370;font-size:11px;font-family:monospace;text-transform:uppercase}
+.code-filename{color:#5C6370;font-size:11px}
+.code-wrap pre{margin:0;border-radius:0}
+.code-wrap pre code.hljs{font-size:13.5px;line-height:1.75;padding:20px}
+
+/* pattern cards */
+.pattern-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0}
+.pattern-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px}
+.pattern-card h4{font-size:13px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.pattern-card p{font-size:12.5px;color:var(--muted);margin:0}
+
+.use-case{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border-radius:10px;padding:20px 24px;margin:24px 0;border:1px solid #BAE6FD}
+.use-case h4{color:#1E40AF;font-size:14px;font-weight:700;margin-bottom:8px}
+.use-case p{margin:0;font-size:14px;color:#334155}
+.mod-nav{display:flex;gap:14px;margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.nav-btn{flex:1;display:flex;align-items:center;gap:12px;padding:16px 20px;background:#fff;border:1px solid var(--border);border-radius:10px;transition:all 0.2s}
+.nav-btn:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,109,221,0.1)}
+.nav-btn.next{justify-content:flex-end;text-align:right}
+.nav-btn small{color:var(--muted);font-size:11px;display:block;margin-bottom:2px}
+.nav-btn strong{font-size:14px;font-weight:600;color:#0F172A}
+@media print{.sidebar{display:none}.main{margin-left:0}}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}.content{padding:28px 20px}}
+
+.copy-btn{background:rgba(255,255,255,0.08);border:1px solid #4B5563;color:#9CA3AF;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;letter-spacing:0.3px;flex-shrink:0}
+.copy-btn:hover{background:#374151;color:#E2E8F0;border-color:#9CA3AF}
+.copy-btn.copied{background:#065F46;color:#6EE7B7;border-color:#065F46}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-header"><div class="sidebar-brand">🦜 LangChain Course</div><div class="sidebar-title">Byte-Sized Lessons</div></div>
+  <a href="index.html" class="sidebar-home">&#8592; Course Home</a>
+  <a href="27-quiz.html" class="sidebar-home" style="color:#6366f1">&#129504; Module 27 Quiz</a>
+  <a href="faq.html" class="sidebar-home">&#10067; Beginner FAQ</a>
+  <a href="checklist.html" class="sidebar-home">&#128203; Coverage Checklist</a>
+  <a href="quiz-index.html" class="sidebar-home">&#128202; Quiz Progress</a>
+  <div class="nav-section">Part 1 — Getting Started</div>
+  <a href="01-what-is-langchain.html" class="nav-link"><span class="n">01</span>What is LangChain?</a>
+  <a href="02-first-agent.html" class="nav-link"><span class="n">02</span>Your First Agent</a>
+  <div class="nav-section">Part 2 — Core Components</div>
+  <a href="03-chat-models.html" class="nav-link"><span class="n">03</span>Chat Models</a>
+  <a href="04-messages.html" class="nav-link"><span class="n">04</span>Messages</a>
+  <a href="05-tools-creating.html" class="nav-link"><span class="n">05</span>Tools — Creating</a>
+  <a href="06-tools-advanced.html" class="nav-link"><span class="n">06</span>Tools — Advanced</a>
+  <a href="07-agents-deep-dive.html" class="nav-link"><span class="n">07</span>Agents Deep Dive</a>
+  <a href="08-structured-output.html" class="nav-link"><span class="n">08</span>Structured Output</a>
+  <div class="nav-section">Part 3 — Memory &amp; State</div>
+  <a href="09-short-term-memory.html" class="nav-link"><span class="n">09</span>Short-Term Memory</a>
+  <a href="10-streaming.html" class="nav-link"><span class="n">10</span>Streaming</a>
+  <a href="11-event-streaming.html" class="nav-link"><span class="n">11</span>Event Streaming</a>
+  <a href="12-long-term-memory.html" class="nav-link"><span class="n">12</span>Long-Term Memory</a>
+  <div class="nav-section">Part 4 — Middleware</div>
+  <a href="13-middleware-overview.html" class="nav-link"><span class="n">13</span>Middleware Overview</a>
+  <a href="14-prebuilt-middleware.html" class="nav-link"><span class="n">14</span>Prebuilt Middleware</a>
+  <a href="15-custom-middleware.html" class="nav-link"><span class="n">15</span>Custom Middleware</a>
+  <div class="nav-section">Part 5 — Advanced Patterns</div>
+  <a href="16-context-engineering.html" class="nav-link"><span class="n">16</span>Context Engineering</a>
+  <a href="17-runtime-context.html" class="nav-link"><span class="n">17</span>Runtime &amp; Context</a>
+  <a href="18-guardrails.html" class="nav-link"><span class="n">18</span>Guardrails</a>
+  <a href="19-human-in-the-loop.html" class="nav-link"><span class="n">19</span>Human-in-the-Loop</a>
+  <a href="20-multi-agent.html" class="nav-link"><span class="n">20</span>Multi-Agent Systems</a>
+  <a href="21-mcp.html" class="nav-link"><span class="n">21</span>Model Context Protocol</a>
+  <div class="nav-section">Part 6 — Retrieval &amp; RAG</div>
+  <a href="22-rag-fundamentals.html" class="nav-link"><span class="n">22</span>RAG Fundamentals</a>
+  <a href="23-2step-rag.html" class="nav-link"><span class="n">23</span>2-Step RAG</a>
+  <a href="24-agentic-rag.html" class="nav-link"><span class="n">24</span>Agentic &amp; Hybrid RAG</a>
+  <div class="nav-section">Part 7 — Frontend</div>
+  <a href="25-frontend-architecture.html" class="nav-link"><span class="n">25</span>Frontend Architecture</a>
+  <a href="26-rendering-patterns.html" class="nav-link"><span class="n">26</span>Rendering Patterns</a>
+  <a href="27-interaction-patterns.html" class="nav-link active"><span class="n">27</span>Interaction Patterns</a>
+  <a href="28-advanced-frontend.html" class="nav-link"><span class="n">28</span>Advanced Frontend</a>
+  <div class="nav-section">Part 8 — Build &amp; Ship</div>
+  <a href="29-langsmith-studio.html" class="nav-link"><span class="n">29</span>LangSmith Studio</a>
+  <a href="30-testing-agents.html" class="nav-link"><span class="n">30</span>Testing Agents</a>
+  <a href="31-agent-chat-ui.html" class="nav-link"><span class="n">31</span>Agent Chat UI</a>
+  <a href="32-deployment-observability.html" class="nav-link"><span class="n">32</span>Deploy &amp; Observe</a>
+</nav>
+
+<main class="main">
+<div class="content">
+
+  <div class="mod-badge">Part 7 · Module 27 · Frontend</div>
+  <h1>Interaction Patterns — Feedback, Uploads &amp; HITL UI</h1>
+  <div class="mod-meta">
+    <span>⏱ ~18 min</span><span>💻 Runnable code</span><span>🖱️ UX patterns</span>
+  </div>
+
+  <div class="overview-box">
+    <p><strong>What you'll learn:</strong> Five interaction patterns that make agent UIs professional — thumbs up/down feedback collection, file upload with context injection, stop-generation, Human-in-the-Loop approval UI, and suggested follow-up prompts.</p>
+  </div>
+
+  <div class="callout analogy">
+    <div class="callout-icon">🎛️</div>
+    <div class="callout-content">
+      <strong>Analogy: the cockpit vs. the car</strong>
+      <p>A car has a steering wheel and pedals — minimal controls for minimal complexity. A cockpit has hundreds of controls because pilots need fine-grained command over a complex system. Agent UIs are cockpits: users need to stop, steer, correct, upload context, approve actions, and provide feedback. The right interaction patterns make the complexity manageable.</p>
+    </div>
+  </div>
+
+  <h2>Five Key Interaction Patterns</h2>
+
+  <div class="pattern-grid">
+    <div class="pattern-card"><h4>👍 Feedback Collection</h4><p>Thumbs up/down per message — drives RLHF and quality monitoring. Store in your DB linked to thread_id + message_id.</p></div>
+    <div class="pattern-card"><h4>📎 File Upload</h4><p>Attach documents the agent can read — sent to the backend, uploaded to storage, URL injected into the agent's message.</p></div>
+    <div class="pattern-card"><h4>⏹️ Stop Generation</h4><p>Abort button cancels the streaming fetch. Critical UX — users expect to be able to stop a long response mid-stream.</p></div>
+    <div class="pattern-card"><h4>✅ HITL Approval UI</h4><p>When agent pauses for approval, show the pending action and Approve/Reject buttons. Resume or redirect based on decision.</p></div>
+    <div class="pattern-card"><h4>💡 Suggested Prompts</h4><p>Show 2–4 follow-up suggestions after each response. Reduces blank-slate anxiety and guides users to valuable actions.</p></div>
+    <div class="pattern-card"><h4>📋 Copy & Share</h4><p>Copy individual messages or the full thread as markdown. Share links generate a read-only view of the conversation.</p></div>
+  </div>
+
+  <h2>Feedback Collection</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">typescript</span><span class="code-filename">components/MessageFeedback.tsx</span></div>
+    <pre><code class="language-typescript">// Backend endpoint: POST /api/feedback { thread_id, message_id, score, comment }
+interface FeedbackProps {
+  threadId: string
+  messageId: string
+}
+
+export function MessageFeedback({ threadId, messageId }: FeedbackProps) {
+  const [feedback, setFeedback] = useState<'up' | 'down' | null>(null)
+  const [showComment, setShowComment] = useState(false)
+  const [comment, setComment] = useState('')
+
+  async function submitFeedback(score: 'up' | 'down') {
+    setFeedback(score)
+    if (score === 'down') setShowComment(true)
+
+    await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ thread_id: threadId, message_id: messageId, score }),
+    })
+  }
+
+  async function submitComment() {
+    await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ thread_id: threadId, message_id: messageId, score: 'down', comment }),
+    })
+    setShowComment(false)
+  }
+
+  return (
+    <div className="feedback">
+      <button
+        className={`feedback-btn ${feedback === 'up' ? 'active-up' : ''}`}
+        onClick={() => submitFeedback('up')}
+        aria-label="Helpful"
+      >👍</button>
+      <button
+        className={`feedback-btn ${feedback === 'down' ? 'active-down' : ''}`}
+        onClick={() => submitFeedback('down')}
+        aria-label="Not helpful"
+      >👎</button>
+
+      {showComment && (
+        <div className="feedback-comment">
+          <textarea
+            placeholder="What went wrong? (optional)"
+            value={comment}
+            onChange={e => setComment(e.target.value)}
+          />
+          <button onClick={submitComment}>Submit</button>
+          <button onClick={() => setShowComment(false)}>Skip</button>
+        </div>
+      )}
+    </div>
+  )
+}</code></pre>
+  </div>
+
+  <h2>File Upload with Context Injection</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">typescript</span><span class="code-filename">components/FileUpload.tsx</span></div>
+    <pre><code class="language-typescript">// Files are uploaded, then the URL/content is injected into the agent's message
+export function useFileAttachment() {
+  const [attachments, setAttachments] = useState<Attachment[]>([])
+
+  const uploadFile = async (file: File): Promise<Attachment> => {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const res = await fetch('/api/upload', { method: 'POST', body: formData })
+    const { url, extracted_text } = await res.json()
+
+    const attachment: Attachment = { name: file.name, url, extractedText: extracted_text }
+    setAttachments(prev => [...prev, attachment])
+    return attachment
+  }
+
+  return { attachments, uploadFile, clearAttachments: () => setAttachments([]) }
+}
+
+// In the chat input component:
+// When user sends message WITH attachments:
+function buildMessageWithAttachments(text: string, attachments: Attachment[]): string {
+  if (!attachments.length) return text
+
+  const attachmentContext = attachments.map(a =>
+    `[Attached file: ${a.name}]\n${a.extractedText?.slice(0, 3000) ?? `File URL: ${a.url}`}`
+  ).join('\n\n')
+
+  return `${attachmentContext}\n\n---\n\n${text}`
+}
+
+// Backend: /api/upload
+// - Accepts multipart form
+// - For PDFs: uses pypdf/pdfplumber to extract text
+// - For images: stores and returns URL (agent can use vision via image URL)
+// - For .txt/.md/.csv: reads content directly
+// - Returns { url: string, extracted_text?: string }</code></pre>
+  </div>
+
+  <h2>Human-in-the-Loop Approval UI</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">typescript</span><span class="code-filename">components/ApprovalCard.tsx</span></div>
+    <pre><code class="language-typescript">interface PendingAction {
+  tool_name: string
+  tool_args: Record<string, unknown>
+  explanation: string
+}
+
+interface ApprovalCardProps {
+  threadId: string
+  action: PendingAction
+  onDecision: (approved: boolean, note?: string) => void
+}
+
+export function ApprovalCard({ threadId, action, onDecision }: ApprovalCardProps) {
+  const [note, setNote] = useState('')
+  const [loading, setLoading] = useState<'approve' | 'reject' | null>(null)
+
+  const handle = async (approved: boolean) => {
+    setLoading(approved ? 'approve' : 'reject')
+
+    await fetch('/api/approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        thread_id: threadId,
+        decision: approved ? 'approve' : 'reject',
+        reviewer_note: note,
+      }),
+    })
+
+    onDecision(approved, note)
+    setLoading(null)
+  }
+
+  return (
+    <div className="approval-card">
+      <div className="approval-header">
+        <span className="approval-icon">⚠️</span>
+        <strong>Action requires your approval</strong>
+      </div>
+
+      <div className="approval-action">
+        <div className="action-name">🔧 {action.tool_name.replace(/_/g, ' ')}</div>
+        <div className="action-explanation">{action.explanation}</div>
+        <pre className="action-args">{JSON.stringify(action.tool_args, null, 2)}</pre>
+      </div>
+
+      <textarea
+        className="approval-note"
+        placeholder="Add a note for the agent (optional — used if rejecting)"
+        value={note}
+        onChange={e => setNote(e.target.value)}
+      />
+
+      <div className="approval-buttons">
+        <button
+          className="btn-approve"
+          onClick={() => handle(true)}
+          disabled={loading !== null}
+        >
+          {loading === 'approve' ? '...' : '✓ Approve'}
+        </button>
+        <button
+          className="btn-reject"
+          onClick={() => handle(false)}
+          disabled={loading !== null}
+        >
+          {loading === 'reject' ? '...' : '✗ Reject'}
+        </button>
+      </div>
+    </div>
+  )
+}</code></pre>
+  </div>
+
+  <h2>Suggested Follow-Up Prompts</h2>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">typescript</span><span class="code-filename">components/SuggestedPrompts.tsx</span></div>
+    <pre><code class="language-typescript">// Generate suggestions based on the last response
+// Either from a backend endpoint or generated client-side with a quick LLM call
+
+async function getSuggestions(lastResponse: string): Promise<string[]> {
+  const res = await fetch('/api/suggestions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content: lastResponse }),
+  })
+  const { suggestions } = await res.json()
+  return suggestions  // ["Tell me more about...", "How do I...", "What are the pros and cons of..."]
+}
+
+// Backend: POST /api/suggestions
+// Calls GPT-4o-mini with a quick prompt:
+# from langchain.chat_models import init_chat_model
+# from pydantic import BaseModel
+#
+# class Suggestions(BaseModel):
+#     suggestions: list[str]  # exactly 3 short follow-up questions
+#
+# suggester = init_chat_model("openai:gpt-4o-mini").with_structured_output(Suggestions)
+# result = suggester.invoke([
+#     SystemMessage("Generate 3 short, useful follow-up questions a user might ask next."),
+#     HumanMessage(last_response)
+# ])
+
+// React component
+export function SuggestedPrompts({ suggestions, onSelect }: {
+  suggestions: string[]
+  onSelect: (prompt: string) => void
+}) {
+  if (!suggestions.length) return null
+  return (
+    <div className="suggested-prompts">
+      {suggestions.map((s, i) => (
+        <button key={i} className="suggestion-chip" onClick={() => onSelect(s)}>
+          {s}
+        </button>
+      ))}
+    </div>
+  )
+}</code></pre>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotcha: validate file uploads server-side</strong>
+      <p>Never trust file type information from the browser — a malicious user can rename a script as <code class="inline">.pdf</code>. Always validate file magic bytes server-side, enforce file size limits (e.g., 10MB max), scan for malware in security-sensitive applications, and extract text in a sandboxed environment. Don't pass file content directly to the agent without sanitization — prompt injection via uploaded documents is a real attack vector.</p>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <div class="callout-icon">✅</div>
+    <div class="callout-content">
+      <strong>Key Takeaways</strong>
+      <p>Thumbs up/down feedback per message is a lightweight quality signal — store <code class="inline">thread_id</code> + <code class="inline">message_id</code> + score. For file uploads: extract text server-side and prepend it to the user's message. For HITL: poll or use WebSocket to detect the interrupt, show an <code class="inline">ApprovalCard</code>, then POST to your approve endpoint. Suggested prompts improve engagement — generate them with a fast model call after every response. Add a stop button that calls <code class="inline">abortController.abort()</code>.</p>
+    </div>
+  </div>
+
+  <div class="mod-nav">
+    <a href="26-rendering-patterns.html" class="nav-btn">
+      <span style="font-size:20px">⬅</span>
+      <div><small>Previous</small><strong>Module 26: Rendering Patterns</strong></div>
+    </a>
+    <a href="28-advanced-frontend.html" class="nav-btn next">
+      <div><small>Next up</small><strong>Module 28: Advanced Frontend →</strong></div>
+      <span style="font-size:20px">➡</span>
+    </a>
+  </div>
+
+</div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();
+
+document.querySelectorAll('.code-wrap').forEach(wrap=>{
+  const header=wrap.querySelector('.code-header');
+  const code=wrap.querySelector('pre code');
+  if(!header||!code)return;
+  const btn=document.createElement('button');
+  btn.className='copy-btn';
+  btn.textContent='Copy';
+  btn.onclick=async()=>{
+    try{
+      await navigator.clipboard.writeText(code.innerText);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }catch(e){
+      // fallback for older browsers
+      const ta=document.createElement('textarea');
+      ta.value=code.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent='Copied!';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2000);
+    }
+  };
+  header.appendChild(btn);
+});
+</script>
+
+<script data-kbdnav="1">
+document.addEventListener("keydown",function(e){
+ if(e.target.matches("input,textarea"))return;
+ var nav=document.querySelector(".mod-nav");if(!nav)return;
+ var links=nav.querySelectorAll("a.nav-btn");
+ if(e.key==="ArrowLeft"&&links[0])location.href=links[0].href;
+ if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
+});
+</script>
+</body>
+</html>

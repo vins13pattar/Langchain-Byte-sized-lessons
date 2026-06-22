@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Quiz Progress | LangChain Course</title>
+<style>
+:root{--bg:#0f1117;--card:#1a2030;--border:#2a3441;--accent:#6366f1;--accent2:#8b5cf6;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;--text:#e2e8f0;--muted:#9ca3af}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:40px 20px}
+.page-header{max-width:1100px;margin:0 auto 40px;text-align:center}
+.page-header h1{font-size:36px;font-weight:900;margin-bottom:8px}
+.page-header p{color:var(--muted);font-size:16px;margin-bottom:24px}
+.overall-progress{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:600px;margin:0 auto 32px;text-align:center}
+.overall-label{font-size:14px;color:var(--muted);margin-bottom:8px}
+.overall-score{font-size:48px;font-weight:900;color:var(--accent);margin-bottom:4px}
+.overall-sub{font-size:14px;color:var(--muted);margin-bottom:16px}
+.big-progress-wrap{background:rgba(255,255,255,0.06);border-radius:8px;height:10px;overflow:hidden}
+.big-progress-inner{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:8px;transition:width 0.6s}
+.nav-links{display:flex;gap:12px;justify-content:center;margin-bottom:40px}
+.nav-links a{color:var(--muted);font-size:13px;text-decoration:none;padding:8px 16px;border:1px solid var(--border);border-radius:8px;transition:all 0.15s}
+.nav-links a:hover{border-color:var(--accent);color:var(--accent)}
+.filter-row{display:flex;gap:8px;justify-content:center;margin-bottom:24px;flex-wrap:wrap}
+.filter-btn{background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--muted);padding:6px 16px;border-radius:20px;cursor:pointer;font-size:13px;transition:all 0.15s}
+.filter-btn.active,.filter-btn:hover{background:rgba(99,102,241,0.15);border-color:var(--accent);color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;max-width:1100px;margin:0 auto}
+.quiz-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-decoration:none;color:var(--text);transition:all 0.2s;cursor:pointer}
+.quiz-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.quiz-card.passed{border-color:var(--green)}
+.quiz-card.failed{border-color:var(--red)}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.card-num{font-size:12px;font-weight:700;color:var(--accent)}
+.card-part{font-size:11px;color:var(--muted);background:rgba(255,255,255,0.05);padding:2px 8px;border-radius:10px}
+.card-title{font-size:14px;font-weight:600;margin-bottom:12px;line-height:1.4}
+.card-status{display:flex;justify-content:space-between;align-items:center}
+.status-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.status-badge.not-started{background:rgba(255,255,255,0.05);color:var(--muted)}
+.status-badge.passed{background:rgba(16,185,129,0.15);color:#6ee7b7}
+.status-badge.failed{background:rgba(239,68,68,0.12);color:#fca5a5}
+.card-score{font-size:13px;font-weight:700;color:var(--muted)}
+.quiz-card.passed .card-score{color:var(--green)}
+.quiz-card.failed .card-score{color:var(--red)}
+.quiz-card.hidden{display:none}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.page-header h1{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <h1>Quiz Progress</h1>
+  <p>Track your mastery across all 32 LangChain modules</p>
+  <div class="overall-progress">
+    <div class="overall-label">Quizzes Passed</div>
+    <div class="overall-score" id="overall-score">-/-</div>
+    <div class="overall-sub" id="overall-sub">Start a quiz to track your progress</div>
+    <div class="big-progress-wrap"><div class="big-progress-inner" id="big-progress" style="width:0%"></div></div>
+  </div>
+  <div class="nav-links">
+    <a href="index.html">Course Index</a>
+    <a href="01-quiz.html">Start from Module 01</a>
+  </div>
+</div>
+<div class="filter-row">
+  <button class="filter-btn active" onclick="filter('all')">All</button>
+  <button class="filter-btn" onclick="filter('passed')">Passed</button>
+  <button class="filter-btn" onclick="filter('failed')">Failed</button>
+  <button class="filter-btn" onclick="filter('not-started')">Not Started</button>
+</div>
+<div class="grid" id="grid">
+<a href="01-quiz.html" class="quiz-card" data-key="lc_quiz_01">
+  <div class="card-header">
+    <span class="card-num">Module 01</span>
+    <span class="card-part">Part 1</span>
+  </div>
+  <div class="card-title">What is LangChain?</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="02-quiz.html" class="quiz-card" data-key="lc_quiz_02">
+  <div class="card-header">
+    <span class="card-num">Module 02</span>
+    <span class="card-part">Part 1</span>
+  </div>
+  <div class="card-title">Your First Agent</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="03-quiz.html" class="quiz-card" data-key="lc_quiz_03">
+  <div class="card-header">
+    <span class="card-num">Module 03</span>
+    <span class="card-part">Part 2</span>
+  </div>
+  <div class="card-title">Chat Models</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="04-quiz.html" class="quiz-card" data-key="lc_quiz_04">
+  <div class="card-header">
+    <span class="card-num">Module 04</span>
+    <span class="card-part">Part 2</span>
+  </div>
+  <div class="card-title">Messages</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="05-quiz.html" class="quiz-card" data-key="lc_quiz_05">
+  <div class="card-header">
+    <span class="card-num">Module 05</span>
+    <span class="card-part">Part 3</span>
+  </div>
+  <div class="card-title">Tools — Creating</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="06-quiz.html" class="quiz-card" data-key="lc_quiz_06">
+  <div class="card-header">
+    <span class="card-num">Module 06</span>
+    <span class="card-part">Part 3</span>
+  </div>
+  <div class="card-title">Tools — Advanced</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="07-quiz.html" class="quiz-card" data-key="lc_quiz_07">
+  <div class="card-header">
+    <span class="card-num">Module 07</span>
+    <span class="card-part">Part 4</span>
+  </div>
+  <div class="card-title">Agents Deep Dive</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="08-quiz.html" class="quiz-card" data-key="lc_quiz_08">
+  <div class="card-header">
+    <span class="card-num">Module 08</span>
+    <span class="card-part">Part 4</span>
+  </div>
+  <div class="card-title">Structured Output</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="09-quiz.html" class="quiz-card" data-key="lc_quiz_09">
+  <div class="card-header">
+    <span class="card-num">Module 09</span>
+    <span class="card-part">Part 5</span>
+  </div>
+  <div class="card-title">Short-Term Memory</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="10-quiz.html" class="quiz-card" data-key="lc_quiz_10">
+  <div class="card-header">
+    <span class="card-num">Module 10</span>
+    <span class="card-part">Part 5</span>
+  </div>
+  <div class="card-title">Streaming</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="11-quiz.html" class="quiz-card" data-key="lc_quiz_11">
+  <div class="card-header">
+    <span class="card-num">Module 11</span>
+    <span class="card-part">Part 5</span>
+  </div>
+  <div class="card-title">Event Streaming</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="12-quiz.html" class="quiz-card" data-key="lc_quiz_12">
+  <div class="card-header">
+    <span class="card-num">Module 12</span>
+    <span class="card-part">Part 5</span>
+  </div>
+  <div class="card-title">Long-Term Memory</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="13-quiz.html" class="quiz-card" data-key="lc_quiz_13">
+  <div class="card-header">
+    <span class="card-num">Module 13</span>
+    <span class="card-part">Part 6</span>
+  </div>
+  <div class="card-title">Middleware Overview</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="14-quiz.html" class="quiz-card" data-key="lc_quiz_14">
+  <div class="card-header">
+    <span class="card-num">Module 14</span>
+    <span class="card-part">Part 6</span>
+  </div>
+  <div class="card-title">Prebuilt Middleware</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="15-quiz.html" class="quiz-card" data-key="lc_quiz_15">
+  <div class="card-header">
+    <span class="card-num">Module 15</span>
+    <span class="card-part">Part 6</span>
+  </div>
+  <div class="card-title">Custom Middleware</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="16-quiz.html" class="quiz-card" data-key="lc_quiz_16">
+  <div class="card-header">
+    <span class="card-num">Module 16</span>
+    <span class="card-part">Part 6</span>
+  </div>
+  <div class="card-title">Context Engineering</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="17-quiz.html" class="quiz-card" data-key="lc_quiz_17">
+  <div class="card-header">
+    <span class="card-num">Module 17</span>
+    <span class="card-part">Part 6</span>
+  </div>
+  <div class="card-title">Runtime Context</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="18-quiz.html" class="quiz-card" data-key="lc_quiz_18">
+  <div class="card-header">
+    <span class="card-num">Module 18</span>
+    <span class="card-part">Part 6</span>
+  </div>
+  <div class="card-title">Guardrails</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="19-quiz.html" class="quiz-card" data-key="lc_quiz_19">
+  <div class="card-header">
+    <span class="card-num">Module 19</span>
+    <span class="card-part">Part 6</span>
+  </div>
+  <div class="card-title">Human-in-the-Loop</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="20-quiz.html" class="quiz-card" data-key="lc_quiz_20">
+  <div class="card-header">
+    <span class="card-num">Module 20</span>
+    <span class="card-part">Part 6</span>
+  </div>
+  <div class="card-title">Multi-Agent Systems</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="21-quiz.html" class="quiz-card" data-key="lc_quiz_21">
+  <div class="card-header">
+    <span class="card-num">Module 21</span>
+    <span class="card-part">Part 6</span>
+  </div>
+  <div class="card-title">MCP Integration</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="22-quiz.html" class="quiz-card" data-key="lc_quiz_22">
+  <div class="card-header">
+    <span class="card-num">Module 22</span>
+    <span class="card-part">Part 7</span>
+  </div>
+  <div class="card-title">RAG Fundamentals</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="23-quiz.html" class="quiz-card" data-key="lc_quiz_23">
+  <div class="card-header">
+    <span class="card-num">Module 23</span>
+    <span class="card-part">Part 7</span>
+  </div>
+  <div class="card-title">Advanced RAG</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="24-quiz.html" class="quiz-card" data-key="lc_quiz_24">
+  <div class="card-header">
+    <span class="card-num">Module 24</span>
+    <span class="card-part">Part 7</span>
+  </div>
+  <div class="card-title">Agentic RAG</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="25-quiz.html" class="quiz-card" data-key="lc_quiz_25">
+  <div class="card-header">
+    <span class="card-num">Module 25</span>
+    <span class="card-part">Part 7</span>
+  </div>
+  <div class="card-title">Frontend Architecture</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="26-quiz.html" class="quiz-card" data-key="lc_quiz_26">
+  <div class="card-header">
+    <span class="card-num">Module 26</span>
+    <span class="card-part">Part 7</span>
+  </div>
+  <div class="card-title">Rendering Patterns</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="27-quiz.html" class="quiz-card" data-key="lc_quiz_27">
+  <div class="card-header">
+    <span class="card-num">Module 27</span>
+    <span class="card-part">Part 7</span>
+  </div>
+  <div class="card-title">Interaction Patterns</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="28-quiz.html" class="quiz-card" data-key="lc_quiz_28">
+  <div class="card-header">
+    <span class="card-num">Module 28</span>
+    <span class="card-part">Part 7</span>
+  </div>
+  <div class="card-title">Advanced Frontend</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="29-quiz.html" class="quiz-card" data-key="lc_quiz_29">
+  <div class="card-header">
+    <span class="card-num">Module 29</span>
+    <span class="card-part">Part 8</span>
+  </div>
+  <div class="card-title">LangSmith Studio</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="30-quiz.html" class="quiz-card" data-key="lc_quiz_30">
+  <div class="card-header">
+    <span class="card-num">Module 30</span>
+    <span class="card-part">Part 8</span>
+  </div>
+  <div class="card-title">Testing Agents</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="31-quiz.html" class="quiz-card" data-key="lc_quiz_31">
+  <div class="card-header">
+    <span class="card-num">Module 31</span>
+    <span class="card-part">Part 8</span>
+  </div>
+  <div class="card-title">Agent Chat UI</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a><a href="32-quiz.html" class="quiz-card" data-key="lc_quiz_32">
+  <div class="card-header">
+    <span class="card-num">Module 32</span>
+    <span class="card-part">Part 8</span>
+  </div>
+  <div class="card-title">Deploy & Observe</div>
+  <div class="card-status">
+    <span class="status-badge not-started">Not started</span>
+    <span class="card-score"></span>
+  </div>
+</a>
+</div>
+<script>
+function filter(type) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('.quiz-card').forEach(card => {
+    if (type === 'all') card.classList.remove('hidden');
+    else if (type === 'passed') card.classList.toggle('hidden', !card.classList.contains('passed'));
+    else if (type === 'failed') card.classList.toggle('hidden', !card.classList.contains('failed'));
+    else if (type === 'not-started') card.classList.toggle('hidden', card.classList.contains('passed') || card.classList.contains('failed'));
+  });
+}
+
+function loadProgress() {
+  let passed = 0, total = 0;
+  document.querySelectorAll('.quiz-card').forEach(card => {
+    const key = card.dataset.key;
+    const badge = card.querySelector('.status-badge');
+    const scoreEl = card.querySelector('.card-score');
+    try {
+      const data = JSON.parse(localStorage.getItem(key) || 'null');
+      if (data) {
+        total++;
+        scoreEl.textContent = data.score + '/' + data.total;
+        if (data.passed) {
+          passed++;
+          card.classList.add('passed');
+          badge.className = 'status-badge passed';
+          badge.textContent = 'Passed';
+        } else {
+          card.classList.add('failed');
+          badge.className = 'status-badge failed';
+          badge.textContent = 'Failed';
+        }
+      }
+    } catch(e) {}
+  });
+  const cards = document.querySelectorAll('.quiz-card').length;
+  document.getElementById('overall-score').textContent = passed + '/' + cards;
+  document.getElementById('big-progress').style.width = (passed / cards * 100) + '%';
+  if (total === 0) {
+    document.getElementById('overall-sub').textContent = 'Start a quiz to track your progress';
+  } else if (passed === cards) {
+    document.getElementById('overall-sub').textContent = 'All quizzes passed! Congratulations!';
+  } else {
+    document.getElementById('overall-sub').textContent = total + ' attempted, ' + (cards - total) + ' remaining';
+  }
+}
+
+loadProgress();
+</script>
+</body>
+</html>
