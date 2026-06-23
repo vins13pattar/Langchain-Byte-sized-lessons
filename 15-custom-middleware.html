@@ -509,5 +509,45 @@ document.addEventListener("keydown",function(e){
  if(e.key==="ArrowRight"&&links[links.length-1])location.href=links[links.length-1].href;
 });
 </script>
+
+
+<!-- font-size control -->
+<style>
+#fs-ctrl{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;align-items:center;gap:2px;background:#0F172A;border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.28);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#fs-ctrl button{background:transparent;border:none;color:#CBD5E1;cursor:pointer;font-weight:800;border-radius:50%;width:34px;height:34px;line-height:1;transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center}
+#fs-ctrl button:hover{background:rgba(255,255,255,.14);color:#fff}
+#fs-ctrl button:focus-visible{outline:2px solid #7FC8FF;outline-offset:1px}
+#fs-dec{font-size:12px}
+#fs-mid{font-size:11px;font-weight:700;color:#7FC8FF;min-width:38px;border-radius:16px!important}
+#fs-inc{font-size:18px}
+@media print{#fs-ctrl{display:none}}
+@media(max-width:600px){#fs-ctrl{right:10px;bottom:10px}}
+</style>
+<div id="fs-ctrl" role="group" aria-label="Reading text size">
+  <button id="fs-dec" type="button" aria-label="Decrease text size">A&minus;</button>
+  <button id="fs-mid" type="button" aria-label="Reset text size" title="Reset to default size">A</button>
+  <button id="fs-inc" type="button" aria-label="Increase text size">A+</button>
+</div>
+<script data-fontsize-control="1">
+(function(){
+  var KEY="lc_font_scale", LV=[0.9,1.0,1.15,1.3], LB=["S","M","L","XL"];
+  // Zoom the whole page root so sidebar + reading column scale together (like page zoom).
+  var target=document.documentElement;
+  var ctrl=document.getElementById("fs-ctrl");
+  var i=parseInt(localStorage.getItem(KEY),10); if(isNaN(i)||i<0||i>3) i=1;
+  var mid=document.getElementById("fs-mid");
+  function apply(){
+    target.style.zoom=LV[i];
+    // keep the control itself at a constant size (counter-scale the root zoom)
+    if(ctrl) ctrl.style.zoom=(1/LV[i]);
+    mid.textContent=LB[i];
+    try{localStorage.setItem(KEY,i);}catch(e){}
+  }
+  document.getElementById("fs-dec").addEventListener("click",function(){ if(i>0){i--;apply();} });
+  document.getElementById("fs-inc").addEventListener("click",function(){ if(i<3){i++;apply();} });
+  mid.addEventListener("click",function(){ i=1; apply(); });
+  apply();
+})();
+</script>
 </body>
 </html>
