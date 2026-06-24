@@ -168,7 +168,7 @@ code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;f
 from langchain.tools import ToolRuntime  # the injected context object
 
 @tool
-def get_my_profile(runtime: ToolRuntime) -> dict:
+def get_my_profile(runtime: ToolRuntime) -&gt; dict:
     """Get the current user's profile information.
 
     Returns the authenticated user's name, email, and role.
@@ -214,7 +214,7 @@ print(result["messages"][-1].content)
       <div class="rf-detail">
         <div class="code-wrap" style="margin:0">
           <pre><code class="language-python">@tool
-def get_user_data(query: str, runtime: ToolRuntime) -> dict:
+def get_user_data(query: str, runtime: ToolRuntime) -&gt; dict:
     """Fetch user-specific data."""
     tenant = runtime.context["tenant_id"]
     user = runtime.context["user_id"]
@@ -230,7 +230,7 @@ def get_user_data(query: str, runtime: ToolRuntime) -> dict:
       <div class="rf-detail">
         <div class="code-wrap" style="margin:0">
           <pre><code class="language-python">@tool
-def check_history(runtime: ToolRuntime) -> str:
+def check_history(runtime: ToolRuntime) -&gt; str:
     """Check if this topic was discussed before."""
     messages = runtime.state["messages"]
     # Count how many turns we've had
@@ -249,7 +249,7 @@ def check_history(runtime: ToolRuntime) -> str:
           <pre><code class="language-python">@tool
 async def remember_preference(
     key: str, value: str, runtime: ToolRuntime
-) -> str:
+) -&gt; str:
     """Save a user preference for future sessions."""
     user_id = runtime.context["user_id"]
     namespace = ("preferences", user_id)
@@ -268,7 +268,7 @@ async def remember_preference(
           <pre><code class="language-python">@tool
 async def analyze_large_file(
     path: str, runtime: ToolRuntime
-) -> str:
+) -&gt; str:
     """Analyze a large file and stream progress."""
     writer = runtime.stream_writer
     lines = open(path).readlines()
@@ -295,7 +295,7 @@ from langchain_core.messages import ToolMessage
 def save_and_respond(
     important_info: str,
     runtime: ToolRuntime
-) -> Command:
+) -&gt; Command:
     """Save important info and add a system note to the conversation.
 
     Args:
@@ -324,7 +324,7 @@ def save_and_respond(
 
 # Routing example — send agent to a specific next step
 @tool
-def escalate_to_human(reason: str, runtime: ToolRuntime) -> Command:
+def escalate_to_human(reason: str, runtime: ToolRuntime) -&gt; Command:
     """Escalate the conversation to a human agent."""
     return Command(
         update={
@@ -353,7 +353,7 @@ from typing import TypedDict, Annotated
 from langgraph.graph.message import add_messages
 
 @tool
-def search_web(query: str) -> str:
+def search_web(query: str) -&gt; str:
     """Search the web."""
     return f"Results for: {query}"
 
@@ -399,7 +399,7 @@ from langchain.tools import tool
 
 # Async tool — define with async def
 @tool
-async def fetch_stock_price(ticker: str) -> dict:
+async def fetch_stock_price(ticker: str) -&gt; dict:
     """Get the current stock price for a ticker symbol.
 
     Args:
@@ -527,6 +527,7 @@ document.addEventListener("keydown",function(e){
 </script>
 
 
+
 <!-- font-size control -->
 <style>
 #fs-ctrl{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;align-items:center;gap:2px;background:#0F172A;border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.28);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
@@ -547,15 +548,31 @@ document.addEventListener("keydown",function(e){
 <script data-fontsize-control="1">
 (function(){
   var KEY="lc_font_scale", LV=[0.9,1.0,1.15,1.3], LB=["S","M","L","XL"];
-  // Zoom the whole page root so sidebar + reading column scale together (like page zoom).
-  var target=document.documentElement;
-  var ctrl=document.getElementById("fs-ctrl");
   var i=parseInt(localStorage.getItem(KEY),10); if(isNaN(i)||i<0||i>3) i=1;
   var mid=document.getElementById("fs-mid");
+  var ctrl=document.getElementById("fs-ctrl");
+
+  // Sidebar: wrap its children so the .sidebar element keeps its own height/overflow
+  // (and stays scrollable); only the inner wrapper is zoomed.
+  var sb=document.querySelector(".sidebar"), sbw=null;
+  if(sb){ sbw=document.createElement("div"); while(sb.firstChild) sbw.appendChild(sb.firstChild); sb.appendChild(sbw); }
+
+  // Reading column: zoom the width-constrained container directly so text reflows.
+  var content=document.querySelector(".content")||document.querySelector(".course-content")||document.querySelector(".main");
+  var contentIsWrapper=false;
+  if(!content){ // no known container (e.g. quiz-index): wrap body content, excluding the control
+    content=document.createElement("div");
+    [].slice.call(document.body.children).forEach(function(n){
+      if(n!==ctrl && n!==sb && n.tagName!=="SCRIPT" && n.tagName!=="STYLE") content.appendChild(n);
+    });
+    document.body.insertBefore(content, ctrl);
+    contentIsWrapper=true;
+  }
+
   function apply(){
-    target.style.zoom=LV[i];
-    // keep the control itself at a constant size (counter-scale the root zoom)
-    if(ctrl) ctrl.style.zoom=(1/LV[i]);
+    var z=LV[i];
+    if(sbw){ sbw.style.zoom=z; sbw.style.width=(100/z)+"%"; }       // keep within sidebar width
+    if(content){ content.style.zoom=z; if(contentIsWrapper) content.style.width=(100/z)+"%"; }
     mid.textContent=LB[i];
     try{localStorage.setItem(KEY,i);}catch(e){}
   }

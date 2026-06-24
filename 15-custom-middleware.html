@@ -172,7 +172,7 @@ class TenantMiddleware(AgentMiddleware):
     """Injects tenant-specific configuration as a system prompt."""
 
     @dynamic_prompt
-    def inject_tenant_prompt(self, state, context) -> str:
+    def inject_tenant_prompt(self, state, context) -&gt; str:
         tenant_id = context.get("tenant_id", "default")
         config = TENANT_CONFIGS.get(tenant_id, {})
 
@@ -295,11 +295,11 @@ class CostTrackingMiddleware(AgentMiddleware):
 
         return response
 
-    def get_user_cost(self, user_id: str) -> dict:
+    def get_user_cost(self, user_id: str) -&gt; dict:
         """Get total cost for a user."""
         return dict(self.totals.get(user_id, {"input": 0, "output": 0, "cost_usd": 0.0}))
 
-    def get_report(self) -> str:
+    def get_report(self) -&gt; str:
         """Print a cost summary."""
         lines = ["=== Cost Report ==="]
         for uid, data in self.totals.items():
@@ -363,7 +363,7 @@ class CircuitBreakerMiddleware(AgentMiddleware):
     def _check_state(self):
         """Transition states based on timing."""
         if self._state == CircuitBreakerState.OPEN:
-            if time.time() - self._last_failure_time >= self.cooldown:
+            if time.time() - self._last_failure_time &gt;= self.cooldown:
                 self._state = CircuitBreakerState.HALF_OPEN
                 self._success_count = 0
 
@@ -378,13 +378,13 @@ class CircuitBreakerMiddleware(AgentMiddleware):
         self._failure_count = 0
         if self._state == CircuitBreakerState.HALF_OPEN:
             self._success_count += 1
-            if self._success_count >= self.success_threshold:
+            if self._success_count &gt;= self.success_threshold:
                 self._state = CircuitBreakerState.CLOSED
 
     def _record_failure(self):
         self._failure_count += 1
         self._last_failure_time = time.time()
-        if self._failure_count >= self.failure_threshold:
+        if self._failure_count &gt;= self.failure_threshold:
             self._state = CircuitBreakerState.OPEN
 
     @wrap_model_call
@@ -511,6 +511,7 @@ document.addEventListener("keydown",function(e){
 </script>
 
 
+
 <!-- font-size control -->
 <style>
 #fs-ctrl{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;align-items:center;gap:2px;background:#0F172A;border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.28);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
@@ -531,15 +532,31 @@ document.addEventListener("keydown",function(e){
 <script data-fontsize-control="1">
 (function(){
   var KEY="lc_font_scale", LV=[0.9,1.0,1.15,1.3], LB=["S","M","L","XL"];
-  // Zoom the whole page root so sidebar + reading column scale together (like page zoom).
-  var target=document.documentElement;
-  var ctrl=document.getElementById("fs-ctrl");
   var i=parseInt(localStorage.getItem(KEY),10); if(isNaN(i)||i<0||i>3) i=1;
   var mid=document.getElementById("fs-mid");
+  var ctrl=document.getElementById("fs-ctrl");
+
+  // Sidebar: wrap its children so the .sidebar element keeps its own height/overflow
+  // (and stays scrollable); only the inner wrapper is zoomed.
+  var sb=document.querySelector(".sidebar"), sbw=null;
+  if(sb){ sbw=document.createElement("div"); while(sb.firstChild) sbw.appendChild(sb.firstChild); sb.appendChild(sbw); }
+
+  // Reading column: zoom the width-constrained container directly so text reflows.
+  var content=document.querySelector(".content")||document.querySelector(".course-content")||document.querySelector(".main");
+  var contentIsWrapper=false;
+  if(!content){ // no known container (e.g. quiz-index): wrap body content, excluding the control
+    content=document.createElement("div");
+    [].slice.call(document.body.children).forEach(function(n){
+      if(n!==ctrl && n!==sb && n.tagName!=="SCRIPT" && n.tagName!=="STYLE") content.appendChild(n);
+    });
+    document.body.insertBefore(content, ctrl);
+    contentIsWrapper=true;
+  }
+
   function apply(){
-    target.style.zoom=LV[i];
-    // keep the control itself at a constant size (counter-scale the root zoom)
-    if(ctrl) ctrl.style.zoom=(1/LV[i]);
+    var z=LV[i];
+    if(sbw){ sbw.style.zoom=z; sbw.style.width=(100/z)+"%"; }       // keep within sidebar width
+    if(content){ content.style.zoom=z; if(contentIsWrapper) content.style.width=(100/z)+"%"; }
     mid.textContent=LB[i];
     try{localStorage.setItem(KEY,i);}catch(e){}
   }

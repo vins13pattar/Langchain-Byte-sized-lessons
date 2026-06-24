@@ -221,7 +221,7 @@ from langchain_community.tools import TavilySearchResults
 # Clear descriptions are critical — they teach the agent when to use each source.
 
 @tool
-def search_internal_docs(query: str) -> str:
+def search_internal_docs(query: str) -&gt; str:
     """Search the internal company knowledge base — product documentation,
     engineering specs, policy documents, and internal procedures.
     Use this for: company policies, product specs, internal processes, howtos.
@@ -239,7 +239,7 @@ def search_internal_docs(query: str) -> str:
     ])
 
 @tool
-def search_customer_cases(query: str) -> str:
+def search_customer_cases(query: str) -&gt; str:
     """Search resolved support tickets and customer case history.
     Use this for: similar past issues, known bugs, workarounds, customer FAQs.
 
@@ -253,7 +253,7 @@ def search_customer_cases(query: str) -> str:
     ])
 
 @tool
-def search_web(query: str) -> str:
+def search_web(query: str) -&gt; str:
     """Search the public web for current information, news, and external resources.
     Use this for: recent events, competitor information, general knowledge,
     anything that wouldn't be in internal documentation.
@@ -267,7 +267,7 @@ def search_web(query: str) -> str:
     return "\n\n".join([r["content"] for r in results])
 
 @tool
-def search_runbooks(query: str) -> str:
+def search_runbooks(query: str) -&gt; str:
     """Search operational runbooks and incident playbooks.
     Use this for: step-by-step procedures, incident response, deployment steps.
 
@@ -311,7 +311,7 @@ class RelevanceGrade(BaseModel):
 
 grader = grader_llm.with_structured_output(RelevanceGrade)
 
-def grade_relevance(question: str, document: str) -> bool:
+def grade_relevance(question: str, document: str) -&gt; bool:
     """Return True if the document is relevant to the question."""
     result = grader.invoke([
         SystemMessage("Grade whether the document is relevant to answering the user's question. Be strict."),
@@ -320,7 +320,7 @@ def grade_relevance(question: str, document: str) -> bool:
     return result.score == "relevant"
 
 @tool
-def smart_search_docs(query: str) -> str:
+def smart_search_docs(query: str) -&gt; str:
     """Search internal docs with automatic relevance checking and re-retrieval.
 
     If the initial results aren't relevant, automatically retries with
@@ -364,7 +364,7 @@ from langchain.tools import tool
 
 # Corrective RAG pattern: internal → web fallback is handled transparently
 @tool
-def search_knowledge_base_with_fallback(query: str) -> str:
+def search_knowledge_base_with_fallback(query: str) -&gt; str:
     """Search the knowledge base. Automatically falls back to web search
     if internal documentation doesn't contain relevant information.
 
@@ -494,6 +494,7 @@ document.addEventListener("keydown",function(e){
 </script>
 
 
+
 <!-- font-size control -->
 <style>
 #fs-ctrl{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;align-items:center;gap:2px;background:#0F172A;border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.28);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
@@ -514,15 +515,31 @@ document.addEventListener("keydown",function(e){
 <script data-fontsize-control="1">
 (function(){
   var KEY="lc_font_scale", LV=[0.9,1.0,1.15,1.3], LB=["S","M","L","XL"];
-  // Zoom the whole page root so sidebar + reading column scale together (like page zoom).
-  var target=document.documentElement;
-  var ctrl=document.getElementById("fs-ctrl");
   var i=parseInt(localStorage.getItem(KEY),10); if(isNaN(i)||i<0||i>3) i=1;
   var mid=document.getElementById("fs-mid");
+  var ctrl=document.getElementById("fs-ctrl");
+
+  // Sidebar: wrap its children so the .sidebar element keeps its own height/overflow
+  // (and stays scrollable); only the inner wrapper is zoomed.
+  var sb=document.querySelector(".sidebar"), sbw=null;
+  if(sb){ sbw=document.createElement("div"); while(sb.firstChild) sbw.appendChild(sb.firstChild); sb.appendChild(sbw); }
+
+  // Reading column: zoom the width-constrained container directly so text reflows.
+  var content=document.querySelector(".content")||document.querySelector(".course-content")||document.querySelector(".main");
+  var contentIsWrapper=false;
+  if(!content){ // no known container (e.g. quiz-index): wrap body content, excluding the control
+    content=document.createElement("div");
+    [].slice.call(document.body.children).forEach(function(n){
+      if(n!==ctrl && n!==sb && n.tagName!=="SCRIPT" && n.tagName!=="STYLE") content.appendChild(n);
+    });
+    document.body.insertBefore(content, ctrl);
+    contentIsWrapper=true;
+  }
+
   function apply(){
-    target.style.zoom=LV[i];
-    // keep the control itself at a constant size (counter-scale the root zoom)
-    if(ctrl) ctrl.style.zoom=(1/LV[i]);
+    var z=LV[i];
+    if(sbw){ sbw.style.zoom=z; sbw.style.width=(100/z)+"%"; }       // keep within sidebar width
+    if(content){ content.style.zoom=z; if(contentIsWrapper) content.style.width=(100/z)+"%"; }
     mid.textContent=LB[i];
     try{localStorage.setItem(KEY,i);}catch(e){}
   }

@@ -273,7 +273,7 @@ data_agent = create_agent(
 
 # ── 2. Wrap each subagent as a callable tool ───────────────────────────────────
 @tool
-async def delegate_to_research(task: str) -> str:
+async def delegate_to_research(task: str) -&gt; str:
     """Delegate a research or information-gathering task to the research agent.
 
     Args:
@@ -285,7 +285,7 @@ async def delegate_to_research(task: str) -> str:
     return result["messages"][-1].content
 
 @tool
-async def delegate_to_code(task: str) -> str:
+async def delegate_to_code(task: str) -&gt; str:
     """Delegate a coding, scripting, or software task to the code agent.
 
     Args:
@@ -297,7 +297,7 @@ async def delegate_to_code(task: str) -> str:
     return result["messages"][-1].content
 
 @tool
-async def delegate_to_data(task: str) -> str:
+async def delegate_to_data(task: str) -&gt; str:
     """Delegate a data analysis, SQL query, or visualization task to the data agent.
 
     Args:
@@ -340,7 +340,7 @@ asyncio.run(main())</code></pre>
 from langchain_core.messages import HumanMessage
 
 # Dispatch all three agents concurrently — no waiting for each to finish
-async def parallel_research(topic: str) -> dict:
+async def parallel_research(topic: str) -&gt; dict:
     """Fan out to multiple agents at the same time."""
 
     research_task = research_agent.ainvoke(
@@ -360,14 +360,14 @@ async def parallel_research(topic: str) -> dict:
 
 # Supervisor tool that runs parallel dispatch
 @tool
-async def parallel_deep_research(topic: str) -> str:
+async def parallel_deep_research(topic: str) -&gt; str:
     """Research a topic in parallel across multiple sources.
 
     Args:
         topic: The topic to research from multiple angles simultaneously.
     """
     results = await parallel_research(topic)
-    return f"Research findings:\n{results['research']}\n\nData & statistics:\n{results['data']}"</code></pre>
+    return f"Research findings:\n{results['research']}\n\nData &amp; statistics:\n{results['data']}"</code></pre>
   </div>
 
   <h2>Passing Context Through the Agent Network</h2>
@@ -392,7 +392,7 @@ research_agent = create_agent(
 
 # Supervisor passes its own context down to subagents
 @tool
-async def delegate_to_research(task: str, runtime) -> str:
+async def delegate_to_research(task: str, runtime) -&gt; str:
     """Delegate a research task.
 
     Args:
@@ -491,6 +491,7 @@ document.addEventListener("keydown",function(e){
 </script>
 
 
+
 <!-- font-size control -->
 <style>
 #fs-ctrl{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;align-items:center;gap:2px;background:#0F172A;border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.28);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
@@ -511,15 +512,31 @@ document.addEventListener("keydown",function(e){
 <script data-fontsize-control="1">
 (function(){
   var KEY="lc_font_scale", LV=[0.9,1.0,1.15,1.3], LB=["S","M","L","XL"];
-  // Zoom the whole page root so sidebar + reading column scale together (like page zoom).
-  var target=document.documentElement;
-  var ctrl=document.getElementById("fs-ctrl");
   var i=parseInt(localStorage.getItem(KEY),10); if(isNaN(i)||i<0||i>3) i=1;
   var mid=document.getElementById("fs-mid");
+  var ctrl=document.getElementById("fs-ctrl");
+
+  // Sidebar: wrap its children so the .sidebar element keeps its own height/overflow
+  // (and stays scrollable); only the inner wrapper is zoomed.
+  var sb=document.querySelector(".sidebar"), sbw=null;
+  if(sb){ sbw=document.createElement("div"); while(sb.firstChild) sbw.appendChild(sb.firstChild); sb.appendChild(sbw); }
+
+  // Reading column: zoom the width-constrained container directly so text reflows.
+  var content=document.querySelector(".content")||document.querySelector(".course-content")||document.querySelector(".main");
+  var contentIsWrapper=false;
+  if(!content){ // no known container (e.g. quiz-index): wrap body content, excluding the control
+    content=document.createElement("div");
+    [].slice.call(document.body.children).forEach(function(n){
+      if(n!==ctrl && n!==sb && n.tagName!=="SCRIPT" && n.tagName!=="STYLE") content.appendChild(n);
+    });
+    document.body.insertBefore(content, ctrl);
+    contentIsWrapper=true;
+  }
+
   function apply(){
-    target.style.zoom=LV[i];
-    // keep the control itself at a constant size (counter-scale the root zoom)
-    if(ctrl) ctrl.style.zoom=(1/LV[i]);
+    var z=LV[i];
+    if(sbw){ sbw.style.zoom=z; sbw.style.width=(100/z)+"%"; }       // keep within sidebar width
+    if(content){ content.style.zoom=z; if(contentIsWrapper) content.style.width=(100/z)+"%"; }
     mid.textContent=LB[i];
     try{localStorage.setItem(KEY,i);}catch(e){}
   }

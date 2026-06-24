@@ -185,15 +185,15 @@ interface Message {
 interface ToolCall {
   name: string
   status: 'running' | 'done'
-  input?: Record<string, unknown>
+  input?: Record&lt;string, unknown&gt;
 }
 
 export function useAgentStream(threadId: string) {
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState&lt;Message[]&gt;([])
   const [isStreaming, setIsStreaming] = useState(false)
-  const abortRef = useRef<AbortController | null>(null)
+  const abortRef = useRef&lt;AbortController | null&gt;(null)
 
-  const sendMessage = useCallback(async (userMessage: string) => {
+  const sendMessage = useCallback(async (userMessage: string) =&gt; {
     if (isStreaming) return
 
     // Add user message immediately (optimistic)
@@ -201,7 +201,7 @@ export function useAgentStream(threadId: string) {
     const assistantId = (Date.now() + 1).toString()
     const assistantMsg: Message = { id: assistantId, role: 'assistant', content: '', isStreaming: true, toolCalls: [] }
 
-    setMessages(prev => [...prev, userMsg, assistantMsg])
+    setMessages(prev =&gt; [...prev, userMsg, assistantMsg])
     setIsStreaming(true)
 
     abortRef.current = new AbortController()
@@ -232,23 +232,23 @@ export function useAgentStream(threadId: string) {
 
           if (data.type === 'token') {
             // Append token to assistant message
-            setMessages(prev => prev.map(m =>
+            setMessages(prev =&gt; prev.map(m =&gt;
               m.id === assistantId ? { ...m, content: m.content + data.content } : m
             ))
           } else if (data.type === 'tool_start') {
-            setMessages(prev => prev.map(m =>
+            setMessages(prev =&gt; prev.map(m =&gt;
               m.id === assistantId
                 ? { ...m, toolCalls: [...(m.toolCalls ?? []), { name: data.name, status: 'running', input: data.input }] }
                 : m
             ))
           } else if (data.type === 'tool_end') {
-            setMessages(prev => prev.map(m =>
+            setMessages(prev =&gt; prev.map(m =&gt;
               m.id === assistantId
-                ? { ...m, toolCalls: (m.toolCalls ?? []).map(tc => tc.name === data.name ? { ...tc, status: 'done' } : tc) }
+                ? { ...m, toolCalls: (m.toolCalls ?? []).map(tc =&gt; tc.name === data.name ? { ...tc, status: 'done' } : tc) }
                 : m
             ))
           } else if (data.type === 'done') {
-            setMessages(prev => prev.map(m =>
+            setMessages(prev =&gt; prev.map(m =&gt;
               m.id === assistantId ? { ...m, isStreaming: false } : m
             ))
           }
@@ -261,7 +261,7 @@ export function useAgentStream(threadId: string) {
     }
   }, [threadId, isStreaming])
 
-  const stopStreaming = useCallback(() => {
+  const stopStreaming = useCallback(() =&gt; {
     abortRef.current?.abort()
     setIsStreaming(false)
   }, [])
@@ -287,8 +287,8 @@ interface Props {
 
 export function MessageContent({ content, isStreaming }: Props) {
   return (
-    <div className="message-content">
-      <ReactMarkdown
+    &lt;div className="message-content"&gt;
+      &lt;ReactMarkdown
         remarkPlugins={[remarkGfm]}   // Tables, strikethrough, task lists
         rehypePlugins={[rehypeHighlight]}  // Syntax highlighting
         components={{
@@ -296,30 +296,30 @@ export function MessageContent({ content, isStreaming }: Props) {
           code({ node, className, children, ...props }) {
             const isBlock = /language-/.test(className || '')
             if (!isBlock) {
-              return <code className="inline-code" {...props}>{children}</code>
+              return &lt;code className="inline-code" {...props}&gt;{children}&lt;/code&gt;
             }
             return (
-              <div className="code-block">
-                <button
+              &lt;div className="code-block"&gt;
+                &lt;button
                   className="copy-btn"
-                  onClick={() => navigator.clipboard.writeText(String(children))}
-                >
+                  onClick={() =&gt; navigator.clipboard.writeText(String(children))}
+                &gt;
                   Copy
-                </button>
-                <code className={className} {...props}>{children}</code>
-              </div>
+                &lt;/button&gt;
+                &lt;code className={className} {...props}&gt;{children}&lt;/code&gt;
+              &lt;/div&gt;
             )
           },
           // Open links in new tab
           a({ href, children }) {
-            return <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>
+            return &lt;a href={href} target="_blank" rel="noopener noreferrer"&gt;{children}&lt;/a&gt;
           },
         }}
-      >
+      &gt;
         {content}
-      </ReactMarkdown>
-      {isStreaming && <span className="cursor" aria-hidden />}
-    </div>
+      &lt;/ReactMarkdown&gt;
+      {isStreaming &amp;&amp; &lt;span className="cursor" aria-hidden /&gt;}
+    &lt;/div&gt;
   )
 }
 
@@ -336,10 +336,10 @@ export function MessageContent({ content, isStreaming }: Props) {
     <pre><code class="language-typescript">interface ToolCall {
   name: string
   status: 'running' | 'done'
-  input?: Record<string, unknown>
+  input?: Record&lt;string, unknown&gt;
 }
 
-const TOOL_ICONS: Record<string, string> = {
+const TOOL_ICONS: Record&lt;string, string&gt; = {
   web_search: '🔍',
   run_sql: '🗄️',
   send_email: '📧',
@@ -351,33 +351,33 @@ export function ToolCallDisplay({ toolCalls }: { toolCalls: ToolCall[] }) {
   if (!toolCalls.length) return null
 
   return (
-    <div className="tool-calls">
-      {toolCalls.map((tc, i) => (
-        <div key={i} className={`tool-call ${tc.status}`}>
-          <span className="tool-icon">{TOOL_ICONS[tc.name] ?? '🔧'}</span>
-          <div className="tool-info">
-            <span className="tool-name">{formatToolName(tc.name)}</span>
-            {tc.input && (
-              <span className="tool-args">
-                {Object.entries(tc.input).slice(0, 2).map(([k, v]) =>
+    &lt;div className="tool-calls"&gt;
+      {toolCalls.map((tc, i) =&gt; (
+        &lt;div key={i} className={`tool-call ${tc.status}`}&gt;
+          &lt;span className="tool-icon"&gt;{TOOL_ICONS[tc.name] ?? '🔧'}&lt;/span&gt;
+          &lt;div className="tool-info"&gt;
+            &lt;span className="tool-name"&gt;{formatToolName(tc.name)}&lt;/span&gt;
+            {tc.input &amp;&amp; (
+              &lt;span className="tool-args"&gt;
+                {Object.entries(tc.input).slice(0, 2).map(([k, v]) =&gt;
                   `${k}: ${JSON.stringify(v).slice(0, 40)}`
                 ).join(', ')}
-              </span>
+              &lt;/span&gt;
             )}
-          </div>
-          <span className="tool-status">
+          &lt;/div&gt;
+          &lt;span className="tool-status"&gt;
             {tc.status === 'running'
-              ? <span className="spinner">⟳</span>
+              ? &lt;span className="spinner"&gt;⟳&lt;/span&gt;
               : '✓'}
-          </span>
-        </div>
+          &lt;/span&gt;
+        &lt;/div&gt;
       ))}
-    </div>
+    &lt;/div&gt;
   )
 }
 
 function formatToolName(name: string): string {
-  return name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  return name.replace(/_/g, ' ').replace(/\b\w/g, c =&gt; c.toUpperCase())
 }</code></pre>
   </div>
 
@@ -517,6 +517,7 @@ document.addEventListener("keydown",function(e){
 </script>
 
 
+
 <!-- font-size control -->
 <style>
 #fs-ctrl{position:fixed;right:18px;bottom:18px;z-index:9999;display:flex;align-items:center;gap:2px;background:#0F172A;border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.28);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
@@ -537,15 +538,31 @@ document.addEventListener("keydown",function(e){
 <script data-fontsize-control="1">
 (function(){
   var KEY="lc_font_scale", LV=[0.9,1.0,1.15,1.3], LB=["S","M","L","XL"];
-  // Zoom the whole page root so sidebar + reading column scale together (like page zoom).
-  var target=document.documentElement;
-  var ctrl=document.getElementById("fs-ctrl");
   var i=parseInt(localStorage.getItem(KEY),10); if(isNaN(i)||i<0||i>3) i=1;
   var mid=document.getElementById("fs-mid");
+  var ctrl=document.getElementById("fs-ctrl");
+
+  // Sidebar: wrap its children so the .sidebar element keeps its own height/overflow
+  // (and stays scrollable); only the inner wrapper is zoomed.
+  var sb=document.querySelector(".sidebar"), sbw=null;
+  if(sb){ sbw=document.createElement("div"); while(sb.firstChild) sbw.appendChild(sb.firstChild); sb.appendChild(sbw); }
+
+  // Reading column: zoom the width-constrained container directly so text reflows.
+  var content=document.querySelector(".content")||document.querySelector(".course-content")||document.querySelector(".main");
+  var contentIsWrapper=false;
+  if(!content){ // no known container (e.g. quiz-index): wrap body content, excluding the control
+    content=document.createElement("div");
+    [].slice.call(document.body.children).forEach(function(n){
+      if(n!==ctrl && n!==sb && n.tagName!=="SCRIPT" && n.tagName!=="STYLE") content.appendChild(n);
+    });
+    document.body.insertBefore(content, ctrl);
+    contentIsWrapper=true;
+  }
+
   function apply(){
-    target.style.zoom=LV[i];
-    // keep the control itself at a constant size (counter-scale the root zoom)
-    if(ctrl) ctrl.style.zoom=(1/LV[i]);
+    var z=LV[i];
+    if(sbw){ sbw.style.zoom=z; sbw.style.width=(100/z)+"%"; }       // keep within sidebar width
+    if(content){ content.style.zoom=z; if(contentIsWrapper) content.style.width=(100/z)+"%"; }
     mid.textContent=LB[i];
     try{localStorage.setItem(KEY,i);}catch(e){}
   }
