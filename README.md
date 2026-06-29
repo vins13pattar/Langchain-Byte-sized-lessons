@@ -1,4 +1,4 @@
-# Langchain---Byte-sized-lessons
+# Langchain Byte sized lessons
 
 A complete, **byte-sized interactive HTML course** covering the official [LangChain (Python) v1 documentation](https://docs.langchain.com/oss/python/langchain/overview). Built for developers who learn by doing — every concept gets a plain-language explanation, a memorable analogy, a minimal runnable example, a real-world use case, and a "gotchas" callout.
 
@@ -15,8 +15,8 @@ No build step, no server — open `index.html` in any browser.
 ## Getting started
 
 ```bash
-git clone https://github.com/vins13pattar/Langchain---Byte-sized-lessons.git
-cd Langchain---Byte-sized-lessons
+git clone https://github.com/vins13pattar/Langchain-Byte-sized-lessons.git
+cd Langchain-Byte-sized-lessons
 open index.html        # or just double-click it
 ```
 
