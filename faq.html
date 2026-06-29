@@ -128,7 +128,7 @@ pre{background:#21252B;color:#E2E8F0;border-radius:8px;padding:14px 16px;overflo
 
   <details><summary>I get <code class="inline">ModuleNotFoundError: No module named 'langchain_openai'</code></summary>
     <div class="ans"><p>The core <code class="inline">langchain</code> package doesn't bundle providers. Install the provider package separately: <code class="inline">pip install langchain-openai</code> (note: the <em>import</em> name uses an underscore, <code class="inline">langchain_openai</code>, but the <em>pip</em> name uses a hyphen, <code class="inline">langchain-openai</code>).</p>
-    <p>Also confirm you installed into the same environment your script runs in — activate your venv first: <code class="inline">source .venv/bin/activate</code>.</p></div>
+    <p>Also confirm you installed into the same environment your script runs in — activate your venv first: <code class="inline">source .venv/bin/activate</code> on macOS / Linux, or <code class="inline">.venv\Scripts\Activate.ps1</code> (PowerShell) / <code class="inline">.venv\Scripts\activate.bat</code> (cmd) on Windows.</p></div>
   </details>
 
   <details><summary>How do I set my API key safely?</summary>

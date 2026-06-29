@@ -172,11 +172,19 @@ cd frontend &amp;&amp; npm install
 
 # Install backend dependencies
 cd ../backend
-python -m venv .venv &amp;&amp; source .venv/bin/activate
+
+# Create + activate a virtual environment
+# macOS / Linux:
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+# Windows (PowerShell):
+python -m venv .venv; .venv\Scripts\Activate.ps1
+# Windows (cmd):  python -m venv .venv  &amp;&amp;  .venv\Scripts\activate.bat
+
 pip install -r requirements.txt
 
 # Configure environment
-cp .env.example .env
+cp .env.example .env          # macOS / Linux
+copy .env.example .env        # Windows (cmd / PowerShell)
 # Edit .env: add ANTHROPIC_API_KEY, LANGCHAIN_API_KEY, etc.
 
 # Run both servers (frontend on :3000, backend on :8000)

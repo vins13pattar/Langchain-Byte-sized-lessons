@@ -73,6 +73,8 @@ code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;f
 /* shell command */
 .shell{background:#0F172A;border-radius:8px;padding:14px 18px;margin:16px 0;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13.5px;color:#86EFAC}
 .shell::before{content:'$ ';color:#475569}
+.shell.win::before{content:'> ';color:#475569}
+.os-label{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#64748B;margin:14px 0 4px}
 
 /* output box */
 .output-box{background:#FAFAFA;border:1px solid var(--border);border-radius:8px;padding:16px;margin:16px 0;font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px;color:#334155;line-height:1.7}
@@ -236,7 +238,22 @@ code.inline{background:#F1F5F9;color:#0F172A;padding:2px 6px;border-radius:4px;f
 
   <h2>1. Install</h2>
 
-  <div class="shell">python -m venv .venv &amp;&amp; source .venv/bin/activate</div>
+  <div class="os-label">macOS / Linux</div>
+  <div class="shell">python3 -m venv .venv &amp;&amp; source .venv/bin/activate</div>
+
+  <div class="os-label">Windows (PowerShell)</div>
+  <div class="shell win">python -m venv .venv</div>
+  <div class="shell win">.venv\Scripts\Activate.ps1</div>
+
+  <div class="callout tip" style="margin:8px 0 16px">
+    <div class="callout-icon">🪟</div>
+    <div class="callout-content">
+      <strong>Windows notes</strong>
+      <p>On Command Prompt (cmd) the activate line is <code class="inline">.venv\Scripts\activate.bat</code> instead. If PowerShell blocks the script with an execution-policy error, run <code class="inline">Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned</code> once for the session, then activate again. Use <code class="inline">python</code> (not <code class="inline">python3</code>) on Windows.</p>
+    </div>
+  </div>
+
+  <div class="os-label">All platforms — once the venv is active</div>
   <div class="shell">pip install langchain langchain-openai python-dotenv</div>
 
   <div class="callout info">
