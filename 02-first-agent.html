@@ -508,6 +508,10 @@ AIMessage: Let me calculate this step by step. First, 25 × 4 = 100. Then, 100 +
     <pre><code class="language-python"># Use Anthropic instead of OpenAI (pip install langchain-anthropic first)
 model = init_chat_model("anthropic:claude-3-5-haiku-20241022", temperature=0)
 
+# Or route through OpenRouter — one API key, many providers
+# (pip install langchain-openrouter; set OPENROUTER_API_KEY). See Module 03.
+model = init_chat_model("openrouter:anthropic/claude-sonnet-4.5", temperature=0)
+
 # Add more tools
 @tool
 def get_word_length(word: str) -&gt; int:

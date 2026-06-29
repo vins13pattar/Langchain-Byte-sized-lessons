@@ -225,6 +225,7 @@ model = init_chat_model("ollama:llama3.2")  # local model</code></pre>
     <div class="ptab" onclick="showProvider('anthropic', this)">Anthropic</div>
     <div class="ptab" onclick="showProvider('google', this)">Google</div>
     <div class="ptab" onclick="showProvider('ollama', this)">Ollama (Local)</div>
+    <div class="ptab" onclick="showProvider('openrouter', this)">OpenRouter</div>
     <div class="ptab" onclick="showProvider('others', this)">Others</div>
   </div>
 
@@ -287,6 +288,22 @@ model = init_chat_model("ollama:llama3.2", base_url="http://gpu-server:11434")</
     </div>
   </div>
 
+  <div id="prov-openrouter" class="provider-content">
+    <div class="code-wrap">
+      <div class="code-header"><span class="code-lang">python</span><span class="code-filename">pip install langchain-openrouter  # one key, many providers</span></div>
+      <pre><code class="language-python"># OpenRouter is a gateway: a single OPENROUTER_API_KEY reaches models from
+# OpenAI, Anthropic, Google, Meta, and more. Model names are "vendor/model".
+model = init_chat_model("openrouter:anthropic/claude-sonnet-4.5")
+model = init_chat_model("openrouter:openai/gpt-4.1")
+model = init_chat_model("openrouter:google/gemini-2.5-flash")
+model = init_chat_model("openrouter:meta-llama/llama-4-maverick")
+
+# The dedicated class exposes OpenRouter-specific params (provider routing, etc.)
+from langchain_openrouter import ChatOpenRouter
+model = ChatOpenRouter(model="anthropic/claude-sonnet-4.5", temperature=0)</code></pre>
+    </div>
+  </div>
+
   <div id="prov-others" class="provider-content">
     <div class="code-wrap">
       <div class="code-header"><span class="code-lang">python</span><span class="code-filename">other providers</span></div>
@@ -304,6 +321,62 @@ model = AzureChatOpenAI(azure_deployment="gpt-4o", api_version="2024-10-01")
 model = init_chat_model("groq:llama-3.3-70b-versatile")
 
 # 50+ total providers — see: https://docs.langchain.com/oss/python/langchain/models</code></pre>
+    </div>
+  </div>
+
+  <h2>Provider Spotlight: OpenRouter <span class="badge" style="background:#FEF3C7;color:#92400E;border:1px solid #FCD34D">beta</span></h2>
+  <p>OpenRouter is unusual: it isn't one provider, it's a <strong>unified gateway</strong> in front of many. With a single <code class="inline">OPENROUTER_API_KEY</code> you can reach OpenAI, Anthropic, Google, Meta and others — useful when you want to A/B different models without juggling four separate accounts and SDKs.</p>
+
+  <div class="callout analogy">
+    <div class="callout-icon">💡</div>
+    <div class="callout-content">
+      <strong>Analogy</strong>
+      <p>If <code class="inline">init_chat_model</code> is a universal remote, OpenRouter is a <em>universal SIM card</em> — one credential that roams across many networks. You change the <code class="inline">"vendor/model"</code> string and OpenRouter handles which backend actually serves the request.</p>
+    </div>
+  </div>
+
+  <p>Install the dedicated package, then use either the <code class="inline">"openrouter:"</code> string format or the <code class="inline">ChatOpenRouter</code> class:</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">openrouter_basics.py</span></div>
+    <pre><code class="language-python"># pip install -U langchain-openrouter
+# export OPENROUTER_API_KEY=...  (get one at openrouter.ai/settings/keys)
+from langchain_openrouter import ChatOpenRouter
+
+model = ChatOpenRouter(
+    model="anthropic/claude-sonnet-4.5",
+    temperature=0,
+    max_tokens=1024,
+)
+
+# Streaming uses the same standard API as every other chat model
+for chunk in model.stream("Write a short poem about the sea."):
+    print(chunk.text, end="", flush=True)
+
+# Tool calling, with_structured_output, and multimodal all work the same way too
+model_with_tools = model.bind_tools([GetWeather])</code></pre>
+  </div>
+
+  <p>Because OpenRouter often has several upstream providers for the same model, you can steer routing — order, fallbacks, or sort by cost/throughput/latency:</p>
+
+  <div class="code-wrap">
+    <div class="code-header"><span class="code-lang">python</span><span class="code-filename">provider_routing.py</span></div>
+    <pre><code class="language-python">model = ChatOpenRouter(
+    model="anthropic/claude-sonnet-4.5",
+    openrouter_provider={
+        "order": ["Anthropic", "Google"],  # try these first
+        "allow_fallbacks": True,           # then fall back to others
+        "sort": "throughput",              # or "latency" / "price"
+        "data_collection": "deny",         # skip providers that train on your data
+    },
+)</code></pre>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-content">
+      <strong>Gotchas</strong>
+      <p>The package is <strong>beta</strong> and ships separately — it is not bundled with <code class="inline">langchain</code> (<code class="inline">pip install langchain-openrouter</code>). Set <code class="inline">OPENROUTER_API_KEY</code>, not <code class="inline">OPENAI_API_KEY</code>. Model strings need the vendor prefix (<code class="inline">"anthropic/claude-sonnet-4.5"</code>, not <code class="inline">"claude-sonnet-4.5"</code>), and a model's available features (audio, video, PDF) depend on the underlying provider — check the <a href="https://openrouter.ai/models" target="_blank" rel="noopener">OpenRouter models page</a>.</p>
     </div>
   </div>
 
